@@ -1,0 +1,14 @@
+[
+    {
+        "baud": "115200",
+        "file": "ssid.bin",
+        "id": 1771339026604,
+        "nome": "teste"
+    },
+    {
+        "id": 1771340153015,
+        "nome": "teste2",
+        "file": "teste_flash.ino.mergedtest.bin",
+        "baud": "460800"
+    }
+]
