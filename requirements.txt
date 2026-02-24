@@ -1,0 +1,6 @@
+flask
+flask-socketio
+eventlet
+pyserial
+esptool
+auto-py-to-exe

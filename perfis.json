@@ -6,9 +6,15 @@
         "nome": "teste"
     },
     {
-        "id": 1771340153015,
-        "nome": "teste2",
+        "baud": "460800",
         "file": "teste_flash.ino.mergedtest.bin",
-        "baud": "460800"
+        "id": 1771340153015,
+        "nome": "teste2"
+    },
+    {
+        "id": 1771511306990,
+        "nome": "SSID MAX SPEED",
+        "file": "ssid.bin",
+        "baud": "1500000"
     }
 ]
