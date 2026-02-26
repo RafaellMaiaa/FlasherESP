@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Flasher v5.0 Auto</title>
+    <title>ESP Flasher  </title>
     
-    <!-- Ícone da Aba do Navegador (Microchip Azul) -->
+    <!-- Ícone da Aba do Navegador -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%2300b4d8' d='M448 80v48h16a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-16v64h16a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-16v64h16a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-16v48a32 32 0 0 1-32 32H80a32 32 0 0 1-32-32v-48H32a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h16v-64H32a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h16v-64H32a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h16V80a32 32 0 0 1 32-32h352a32 32 0 0 1 32 32zm-128 96H192v160h128V176z'/></svg>">
     
     <!-- Bibliotecas Externas -->
@@ -143,7 +143,7 @@
 
         /* INPUTS */
         .prod-input { font-family: 'Consolas', monospace; font-weight: bold; background-color: #f8f9fa; border-color: #dee2e6; }
-        .sn-input { color: #856404; background-color: #fff3cd; border-color: #ffeeba; } /* Destaque para o SN aleatório */
+        .sn-input { color: #856404; background-color: #fff3cd; border-color: #ffeeba; } 
         
         /* BOTÃO MEGA */
         .btn-mega {
@@ -342,10 +342,16 @@
                         <label class="small fw-bold">MAC Address</label>
                         <input type="text" id="input-mac" class="form-control form-control-sm prod-input">
                     </div>
+                    
+                    <!-- CAMPO SN MELHORADO COM BOTÃO DE RECARREGAR -->
                     <div class="mb-2">
-                        <label class="small fw-bold text-warning">SN (10 Díg. Aleatórios)</label>
-                        <input type="text" id="input-sn" class="form-control form-control-sm prod-input sn-input">
+                        <label class="small fw-bold text-warning">SN (Podes editar manualmente)</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" id="input-sn" class="form-control prod-input sn-input">
+                            <button class="btn btn-warning fw-bold" onclick="gerarNovoSN('input-sn')" type="button" title="Gerar outro SN Aleatório"><i class="fas fa-sync-alt"></i></button>
+                        </div>
                     </div>
+                    
                     <div class="mb-2">
                         <label class="small fw-bold">IMEI (GSM)</label>
                         <input type="text" id="input-imei" class="form-control form-control-sm prod-input">
@@ -383,10 +389,16 @@
                             <label class="small fw-bold">MAC Address</label>
                             <input type="text" id="off-mac" class="form-control prod-input">
                         </div>
+                        
+                        <!-- CAMPO SN OFFLINE MELHORADO -->
                         <div class="col-6">
-                            <label class="small fw-bold text-warning">SN (Aleatório)</label>
-                            <input type="text" id="off-sn" class="form-control prod-input sn-input">
+                            <label class="small fw-bold text-warning">SN (Aleatório/Editável)</label>
+                            <div class="input-group">
+                                <input type="text" id="off-sn" class="form-control prod-input sn-input">
+                                <button class="btn btn-warning" onclick="gerarNovoSN('off-sn')" type="button" title="Gerar Novo SN Aleatório"><i class="fas fa-sync-alt"></i></button>
+                            </div>
                         </div>
+                        
                         <div class="col-6">
                             <label class="small fw-bold">IMEI</label>
                             <input type="text" id="off-imei" class="form-control prod-input">
@@ -464,13 +476,12 @@
                 <div class="custom-card mb-4" style="border-left: 5px solid var(--accent);">
                     <h5 class="mb-3">Carregar Novo Modelo</h5>
                     <div class="input-group mb-2">
-                        <!-- Aceitar lbl e nlbl e text -->
                         <input type="file" id="upEtiqueta" class="form-control" accept=".zpl,.txt,.prn,.lbl,.nlbl">
                         <button class="btn btn-dark" onclick="uploadEtiqueta()">
                             <i class="fas fa-upload me-2"></i> Subir
                         </button>
                     </div>
-                    <small class="text-muted d-block mt-2">Guarde no ZebraDesigner usando <b>Imprimir para ficheiro</b> (pode gravar com terminação .lbl, .nlbl ou .zpl).</small>
+                    <small class="text-muted d-block mt-2">Guarde no ZebraDesigner usando <b>Imprimir para ficheiro</b>.</small>
                 </div>
             </div>
             <div class="col-md-7">
@@ -516,7 +527,7 @@
 
 </div>
 
-<!-- CÓDIGO JAVASCRIPT DETALHADO -->
+<!-- CÓDIGO JAVASCRIPT DETALHADO (TOTALMENTE EXPANDIDO) -->
 <script>
     const socket = io();
     const consola = document.getElementById('consola');
@@ -536,6 +547,12 @@
 
     // ETIQUETA ATIVA SALVA NO NAVEGADOR
     let etiquetaAtiva = localStorage.getItem('etiquetaAtiva') || null;
+
+    // --- NOVA FUNÇÃO PARA GERAR SN ALEATÓRIO À FORÇA ---
+    function gerarNovoSN(campoId) {
+        const novoSN = Math.floor(Math.random() * 9000000000) + 1000000000;
+        document.getElementById(campoId).value = novoSN;
+    }
 
     // --- SISTEMA DE NAVEGAÇÃO ---
     function showPanel(id) {
@@ -597,7 +614,6 @@
             toolsMonitor.style.setProperty('display', 'flex', 'important');
             consola.classList.add('serial-mode');
         }
-        
         consola.scrollTop = consola.scrollHeight;
     }
 
@@ -631,13 +647,12 @@
             
             if (jsonZpl.sucesso) {
                 if (jsonZpl.impresso_direto) {
-                    consola.innerHTML += `<div class='log-line log-success'>>> <i class="fas fa-print"></i> ETIQUETA ENVIADA COM SUCESSO PARA A IMPRESSORA (${ip})!</div>`;
+                    consola.innerHTML += `<div class='log-line log-success'>>> <i class="fas fa-print"></i> ETIQUETA ENVIADA (IP: ${ip})!</div>`;
                 } else {
                     const blob = new Blob([jsonZpl.zpl], {type:'text/plain'});
                     const a = document.createElement('a');
                     a.href = window.URL.createObjectURL(blob);
                     
-                    // Extrair extensão do modelo original (.lbl, .nlbl, .zpl, etc) para devolver com a mesma extensão
                     const extensaoOriginal = etiquetaAtiva.split('.').pop();
                     a.download = `Etiqueta_${sn || imei || "GERADO"}.${extensaoOriginal}`;
                     
@@ -656,7 +671,7 @@
     // --- AUTOMAÇÃO DE PRODUÇÃO (BOTÃO 1 CLIQUE) ---
     async function processarTudoCompleto() {
         if (!monitorConnected) {
-            return alert("Por favor, ligue o Monitor Serial primeiro!");
+            return alert("Ligue o Monitor Serial primeiro!");
         }
         
         if (!etiquetaAtiva) { 
@@ -672,30 +687,33 @@
         consola.scrollTop = consola.scrollHeight;
 
         try {
-            // Analisa as logs do backend
             const res = await fetch('/analisar_buffer', { method: 'POST' });
             const dados = await res.json();
 
-            // Pega nos campos de texto que estão na interface
             let inMac = document.getElementById('input-mac');
             let inSn = document.getElementById('input-sn');
             let inImei = document.getElementById('input-imei');
             let inCimi = document.getElementById('input-cimi');
             
-            // Se o backend tiver dados frescos, atualiza as caixas de texto
-            if (dados.mac) inMac.value = dados.mac; 
-            if (dados.imei) inImei.value = dados.imei; 
-            if (dados.cimi) inCimi.value = dados.cimi;
+            // Retira os dois pontos (:) do MAC E passa para minúsculas
+            if (dados.mac) {
+                inMac.value = dados.mac.replace(/:/g, '').toLowerCase(); 
+            }
+            
+            if (dados.imei) {
+                inImei.value = dados.imei; 
+            }
+            
+            if (dados.cimi) {
+                inCimi.value = dados.cimi;
+            }
 
-            // PROTEÇÃO DO SN ALEATÓRIO: Se já tiver gerado um no ecrã para este equipamento, mantêm-o.
             if (!inSn.value && dados.sn) {
                 inSn.value = dados.sn;
             } else if (!inSn.value) {
-                // Se por acaso não veio do backend, gera localmente! (Garante que nunca vai vazio)
                 inSn.value = Math.floor(Math.random() * 9000000000) + 1000000000; 
             }
 
-            // O SEGREDO DA CORREÇÃO: O payload usa AGORA os valores que estão no ecrã visíveis
             const payload = {
                 mac: inMac.value,
                 sn: inSn.value,
@@ -704,22 +722,20 @@
             };
 
             if (!payload.mac && !payload.imei && !payload.cimi) {
-                alert("Atenção: Não foram detetados identificadores nas logs. O módulo já iniciou?");
+                alert("Atenção: Não foram detetados identificadores nas logs.");
                 throw new Error("Sem dados");
             }
 
-            // Gravar no ficheiro CSV
             await fetch('/guardar_csv_manual', { 
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify(payload) 
             });
             
-            // Gerar a etiqueta e Enviar/Baixar
             await executarMotorZPL(payload.mac, payload.sn, payload.imei, payload.cimi);
 
-        } catch(e) {
-            console.error("Automação falhou:", e);
+        } catch(e) { 
+            console.error("Automação falhou:", e); 
         } finally {
             btn.disabled = false;
             btn.innerHTML = `<i class="fas fa-bolt fa-lg me-2"></i> 1 CLIQUE:<br><span class="small" style="font-weight:600;">Lê Logs + CSV + Zebra</span>`;
@@ -739,13 +755,9 @@
         fd.append('file', input.files[0]);
         
         try {
-            const res = await fetch('/analisar_logs_ficheiro', { 
-                method: 'POST', 
-                body: fd 
-            });
-            
+            const res = await fetch('/analisar_logs_ficheiro', { method: 'POST', body: fd });
             if (!res.ok) {
-                throw new Error("A rota offline não foi encontrada. O servidor foi reiniciado?");
+                throw new Error("A rota offline não foi encontrada.");
             }
             
             const dados = await res.json();
@@ -753,11 +765,16 @@
                 return alert(dados.erro);
             }
             
-            document.getElementById('off-mac').value = dados.mac || '';
+            // Retira os dois pontos (:) do MAC E passa para minúsculas no ecrã Offline
+            if (dados.mac) {
+                document.getElementById('off-mac').value = dados.mac.replace(/:/g, '').toLowerCase();
+            } else {
+                document.getElementById('off-mac').value = '';
+            }
+            
             document.getElementById('off-imei').value = dados.imei || '';
             document.getElementById('off-cimi').value = dados.cimi || '';
             
-            // PROTEÇÃO DO SN ALEATÓRIO OFFLINE
             let currentOffSn = document.getElementById('off-sn').value;
             if (!currentOffSn && dados.sn) {
                 document.getElementById('off-sn').value = dados.sn;
@@ -765,7 +782,7 @@
                 document.getElementById('off-sn').value = Math.floor(Math.random() * 9000000000) + 1000000000;
             }
             
-            alert("Logs lidas com sucesso! Verifique os dados em baixo.");
+            alert("Logs lidas com sucesso!");
         } catch(e) { 
             alert("Erro de comunicação: " + e.message); 
         }
@@ -778,7 +795,7 @@
         const cimi = document.getElementById('off-cimi').value;
         
         if (!mac && !imei && !cimi) {
-            return alert("Sem dados para processar! Faça a Análise primeiro.");
+            return alert("Sem dados para processar!");
         }
         
         if (!etiquetaAtiva) { 
@@ -787,14 +804,11 @@
         }
         
         try {
-            // Guardar no CSV
             await fetch('/guardar_csv_manual', { 
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 
                 body: JSON.stringify({ mac, imei, sn, cimi }) 
             });
-            
-            // Gerar a etiqueta e Enviar/Baixar
             await executarMotorZPL(mac, sn, imei, cimi);
             alert("Processamento offline concluído com sucesso!");
         } catch(e) { 
@@ -802,7 +816,7 @@
         }
     }
 
-    // --- GESTÃO DE ETIQUETAS ZPL ---
+    // --- GESTÃO DE ETIQUETAS E ZPL ---
     function atualizarLabelBadge() {
         const badgeSpan = document.getElementById('label-name');
         const badgeContainer = document.getElementById('label-ativo-badge');
@@ -858,7 +872,7 @@
         localStorage.setItem('etiquetaAtiva', nome); 
         carregarEtiquetas(); 
     }
-
+    
     async function uploadEtiqueta() { 
         const input = document.getElementById('upEtiqueta'); 
         if (input.files.length === 0) return; 
@@ -867,15 +881,14 @@
         fd.append('file', input.files[0]); 
         
         const res = await fetch('/upload_etiqueta', { method: 'POST', body: fd }); 
-        
         if (res.ok) { 
             input.value = ""; 
             carregarEtiquetas(); 
         } 
     }
-
+    
     async function apagarEtiqueta(f) { 
-        if (confirm(`Tem a certeza que deseja apagar o modelo "${f}"?`)) { 
+        if (confirm(`Apagar o modelo "${f}"?`)) { 
             await fetch('/delete_etiqueta', { 
                 method: 'POST', 
                 headers: {'Content-Type': 'application/json'}, 
@@ -894,7 +907,7 @@
     function exportarCSV() { 
         window.location.href = '/api/export_csv'; 
     }
-
+    
     async function apagarCSV() { 
         if (confirm("PERIGO: Deseja apagar todo o histórico de aparelhos guardados?")) { 
             await fetch('/api/delete_csv', { method: 'POST' }); 
@@ -1044,11 +1057,19 @@
     });
 
     socket.on('dados_capturados', dados => { 
-        if (dados.mac) document.getElementById('input-mac').value = dados.mac; 
-        if (dados.imei) document.getElementById('input-imei').value = dados.imei; 
-        if (dados.cimi) document.getElementById('input-cimi').value = dados.cimi; 
+        // Retira os dois pontos (:) do MAC E passa para minúsculas na escuta em direto
+        if (dados.mac) {
+            document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); 
+        }
         
-        // Bloqueia e preenche o SN se ainda estiver vazio e já tiver vindo do backend
+        if (dados.imei) {
+            document.getElementById('input-imei').value = dados.imei; 
+        }
+        
+        if (dados.cimi) {
+            document.getElementById('input-cimi').value = dados.cimi; 
+        }
+        
         if (dados.serial && !document.getElementById('input-sn').value) {
             document.getElementById('input-sn').value = dados.serial;
         }
@@ -1073,9 +1094,9 @@
         document.getElementById('barra').style.width = "5%"; 
         document.getElementById('barra').className = "progress-bar progress-bar-striped progress-bar-animated bg-info";
         
-        // ZERAR OS CAMPOS PARA INICIAR UMA NOVA SESSÃO LIMPA (E LIMPAR O SN)
-        ['input-mac', 'input-sn', 'input-imei', 'input-cimi'].forEach(id => {
-            document.getElementById(id).value = "";
+        // Limpar todas as caixas de texto antes do flash
+        ['input-mac', 'input-sn', 'input-imei', 'input-cimi'].forEach(id => { 
+            document.getElementById(id).value = ""; 
         });
         
         socket.emit('iniciar_processo', { porta, baud, ficheiro, modo });
@@ -1118,9 +1139,18 @@
         const res = await fetch('/analisar_buffer', {method: 'POST'}); 
         const dados = await res.json(); 
         
-        if (dados.mac) document.getElementById('input-mac').value = dados.mac; 
-        if (dados.imei) document.getElementById('input-imei').value = dados.imei; 
-        if (dados.cimi) document.getElementById('input-cimi').value = dados.cimi; 
+        // Retira os dois pontos (:) do MAC E passa para minúsculas
+        if (dados.mac) {
+            document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); 
+        }
+        
+        if (dados.imei) {
+            document.getElementById('input-imei').value = dados.imei; 
+        }
+        
+        if (dados.cimi) {
+            document.getElementById('input-cimi').value = dados.cimi; 
+        }
         
         if (!document.getElementById('input-sn').value && dados.sn) {
             document.getElementById('input-sn').value = dados.sn;
@@ -1134,7 +1164,6 @@
             sn: document.getElementById('input-sn').value, 
             cimi: document.getElementById('input-cimi').value 
         }; 
-        
         await fetch('/guardar_csv_manual', { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
@@ -1160,7 +1189,6 @@
             sel.innerHTML = ""; 
             dados.forEach(p => {
                 let nome = p.device + " | " + p.description;
-                // Devolve a estrela para portas recomendadas
                 if (p.description.match(/CP210|CH340|Serial|USB/i)) {
                     nome = "⭐ " + nome;
                 }
@@ -1192,14 +1220,15 @@
         if (renderList) { 
             const lista = document.getElementById('listaFiles'); 
             lista.innerHTML = ""; 
+            
             if (files.length === 0) return; 
             
             files.forEach(f => { 
                 lista.innerHTML += `
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span><i class="fas fa-file-code me-2 text-primary"></i>${f}</span>
-                    <button class="btn btn-sm btn-outline-danger" onclick="apagar('${f}')"><i class="fas fa-trash"></i></button>
-                </li>`; 
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-file-code me-2 text-primary"></i>${f}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="apagar('${f}')"><i class="fas fa-trash"></i></button>
+                    </li>`; 
             }); 
         } 
     }
@@ -1257,7 +1286,7 @@
         atualizarLabelBadge(); 
     }
     
-    // Iniciar
+    // Iniciar a aplicação
     carregarDados();
     
 </script>
