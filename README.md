@@ -1,9 +1,9 @@
 
 # 🏭 ESP Flasher v6
 
-**ESP Flasher v6** é uma solução completa de automação desenhada para otimizar o ciclo de vida inicial de microcontroladores (ESP32 / ESP8266) em linhas de montagem industriais.
+**ESP Flasher v6** é uma solução completa de automação desenhada para otimizar o ciclo de vida inicial de microcontroladores (ESP32 / ESP8266).
 
-A aplicação unifica gravação de firmware (Flash), monitorização serial para extração de identificadores (MAC, IMEI, CIMI), rastreabilidade em base de dados (CSV) e impressão de etiquetas Zebra (ZPL) numa única interface web robusta.
+A aplicação unifica gravação de firmware (Flash), monitorização serial para extração de identificadores (MAC, IMEI, CIMI), rastreabilidade em base de dados (CSV) e impressão de etiquetas Zebra (ZPL) numa única interface web.
 
 ## ✨ Principais Funcionalidades
 
@@ -17,8 +17,7 @@ A aplicação unifica gravação de firmware (Flash), monitorização serial par
 ### 🛡️ Gestão e Controlo de Qualidade
 
 -   **Modo Administrador Restrito:** (Senha: `admin123`) Acesso exclusivo para criar regras de produção e gerir o histórico.
-    
--   **Perfis de Hardware Rigorosos:** Associação obrigatória entre Firmware, Baudrate, Molde de Etiqueta (ZPL) e Manual PDF. Impede que o operador grave a placa com o software errado.
+
     
 -   **Rastreabilidade Segura:** Registo imutável de Data, MAC, SN, IMEI, CIMI e Perfil utilizado num ficheiro CSV filtrável.
     
@@ -34,7 +33,7 @@ A aplicação unifica gravação de firmware (Flash), monitorização serial par
 
 ### 📂 Modo de Processamento Offline
 
--   Permite o _upload_ de ficheiros de log (`.txt`) em bruto para extração retroativa de dados e re-impressão de etiquetas (ideal para postos de retrabalho).
+-   Permite o _upload_ de ficheiros de log (`.txt`) em bruto para extração retroativa de dados e re-impressão de etiquetas.
     
 
 ## 🛠️ Arquitetura Técnica
