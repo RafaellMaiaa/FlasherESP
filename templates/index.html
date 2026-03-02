@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP Flasher  </title>
+    <title>ESP Flasher</title>
     
     <!-- Ícone da Aba do Navegador -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><path fill='%2300b4d8' d='M448 80v48h16a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-16v64h16a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-16v64h16a16 16 0 0 1 16 16v32a16 16 0 0 1-16 16h-16v48a32 32 0 0 1-32 32H80a32 32 0 0 1-32-32v-48H32a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h16v-64H32a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h16v-64H32a16 16 0 0 1-16-16v-32a16 16 0 0 1 16-16h16V80a32 32 0 0 1 32-32h352a32 32 0 0 1 32 32zm-128 96H192v160h128V176z'/></svg>">
@@ -12,6 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <style>
         /* VARIÁVEIS DE TEMA */
@@ -35,16 +36,24 @@
             margin: 0; 
         }
         
-        /* SIDEBAR */
+        /* SIDEBAR RETRÁTIL (NOVO COMPORTAMENTO V6.1) */
         .sidebar {
-            width: 260px;
+            width: 80px; /* Começa pequena */
             background-color: var(--primary);
             color: white;
             display: flex;
             flex-direction: column;
-            padding: 25px 15px;
+            padding: 25px 10px;
             box-shadow: 4px 0 20px rgba(0,0,0,0.1);
             z-index: 1000;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease;
+            overflow-x: hidden;
+            align-items: center; /* Centraliza itens quando pequena */
+        }
+        .sidebar.expanded {
+            width: 260px; /* Fica grande ao clicar */
+            align-items: stretch;
+            padding: 25px 15px;
         }
 
         .logo-area {
@@ -54,32 +63,56 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
             padding-bottom: 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .logo-area:hover {
+            transform: scale(1.05);
+        }
+
+        /* Detalhes de texto (escondidos quando a sidebar é pequena) */
+        .sidebar-details {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar.expanded .sidebar-details {
+            display: block;
+            opacity: 1;
         }
 
         .nav-btn {
             background: transparent;
             color: #aeb9cc;
             border: none;
-            padding: 14px 20px;
+            padding: 14px 0;
             width: 100%;
-            text-align: left;
+            text-align: center;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
+            justify-content: center;
             border-radius: 10px;
             font-size: 15px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .sidebar.expanded .nav-btn {
+            padding: 14px 20px;
+            justify-content: flex-start;
         }
 
         .nav-btn:hover { 
             background-color: rgba(255,255,255,0.08); 
             color: white; 
             transform: translateX(5px); 
+        }
+        .sidebar:not(.expanded) .nav-btn:hover {
+            transform: scale(1.1); /* Animação diferente se estiver pequena */
         }
 
         .nav-btn.active { 
@@ -89,11 +122,23 @@
             box-shadow: 0 4px 10px rgba(0, 180, 216, 0.3); 
         }
 
-        .nav-btn i { width: 30px; font-size: 1.1rem; text-align: center; }
-        .nav-text { margin-left: 10px; }
+        .nav-btn i { width: 30px; font-size: 1.2rem; text-align: center; }
+        .nav-text { 
+            display: none; 
+            margin-left: 10px; 
+        }
+        .sidebar.expanded .nav-text {
+            display: inline;
+        }
 
         .btn-exit { margin-top: auto; color: #ff6b6b !important; border: 1px solid rgba(255, 107, 107, 0.2); }
         .btn-exit:hover { background-color: var(--danger) !important; color: white !important; border-color: var(--danger); }
+
+        .admin-badge {
+            background: #ffc107; color: #000; font-size: 10px; padding: 3px 8px; 
+            border-radius: 12px; margin-top: 5px; font-weight: 800; display: none;
+            letter-spacing: 1px;
+        }
 
         /* PAINÉIS E CARDS */
         .content { flex: 1; padding: 30px; overflow-y: auto; position: relative; }
@@ -108,7 +153,7 @@
             border: none; border-top: 4px solid var(--accent); 
         }
 
-        /* CONSOLA */
+        /* CONSOLA DUPLA */
         .console-wrapper {
             border: 1px solid #2c3e50; border-radius: 12px; overflow: hidden;
             background: var(--console-bg); display: flex; flex-direction: column;
@@ -133,10 +178,10 @@
         .log-success { color: var(--success); font-weight: bold; }
         .log-warning { color: #FF9800; font-weight: bold; }
 
-        /* BADGES */
+        /* BADGES TOPO */
         .badge-profile, .badge-label {
-            background: #e9ecef; color: #495057; padding: 6px 12px; border-radius: 20px;
-            font-size: 0.85rem; font-weight: 600; border: 1px solid #dee2e6; cursor: pointer; transition: 0.2s;
+            background: #e9ecef; color: #495057; padding: 8px 15px; border-radius: 20px;
+            font-size: 0.9rem; font-weight: 600; border: 1px solid #dee2e6; cursor: pointer; transition: 0.2s;
         }
         .badge-profile.active { background: #d4edda; color: #155724; border-color: #c3e6cb; }
         .badge-label.active { background: #cce5ff; color: #004085; border-color: #b8daff; }
@@ -145,59 +190,78 @@
         .prod-input { font-family: 'Consolas', monospace; font-weight: bold; background-color: #f8f9fa; border-color: #dee2e6; }
         .sn-input { color: #856404; background-color: #fff3cd; border-color: #ffeeba; } 
         
-        /* BOTÃO MEGA */
+        /* BOTOES DE AUTOMAÇÃO */
         .btn-mega {
-            background: linear-gradient(45deg, #FF9800, #F44336); color: white; border: none;
-            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4); text-transform: uppercase; font-weight: 800;
+            background: linear-gradient(45deg, #00b4d8, #0077b6); color: white; border: none;
+            box-shadow: 0 4px 15px rgba(0, 180, 216, 0.4); text-transform: uppercase; font-weight: 800;
             transition: all 0.2s;
         }
-        .btn-mega:hover { background: linear-gradient(45deg, #F44336, #FF9800); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(244, 67, 54, 0.6); color: white;}
+        .btn-mega:hover { background: linear-gradient(45deg, #0077b6, #00b4d8); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 180, 216, 0.6); color: white;}
         .btn-mega:disabled { background: #ccc; box-shadow: none; transform: none; cursor: not-allowed; }
         
         /* TELA SHUTDOWN */
         .shutdown-screen { background-color: #000; color: white; height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; z-index: 9999; }
+        
+        /* CLASSES EXCLUSIVAS PARA O MODO ADMINISTRADOR */
+        .admin-only { display: none !important; }
+        .admin-only-cell { display: none !important; }
+        
+        body.is-admin .admin-only { display: block !important; }
+        body.is-admin .admin-only-flex { display: flex !important; }
+        body.is-admin .admin-only-cell { display: table-cell !important; }
+        body.is-admin .sidebar.expanded .admin-badge { display: inline-block !important; }
     </style>
 </head>
-<body>
+<body id="app-body">
 
 <div class="sidebar">
-    <div class="logo-area">
+    <!-- Clica no Logo para expandir a Sidebar -->
+    <div class="logo-area" onclick="toggleSidebar()" title="Clique para Expandir/Recolher o Menu">
         <i class="fas fa-microchip" style="font-size: 2.8rem; color: var(--accent);"></i>
-        <span style="font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; color: white; margin-top:5px;">
-            ESP <span style="color: var(--accent);">Tool</span>
-        </span>
+        <div class="sidebar-details text-center">
+            <span style="font-size: 1.5rem; font-weight: 800; letter-spacing: 1px; color: white; margin-top:5px; display:block;">
+                ESP <span style="color: var(--accent);">MES</span>
+            </span>
+            <span class="admin-badge">MODO ADMIN</span>
+        </div>
     </div>
     
-    <button class="nav-btn active" onclick="showPanel('painel-flash')">
-        <i class="fas fa-bolt"></i><span class="nav-text">Flash & Produção</span>
+    <button class="nav-btn active" onclick="showPanel('painel-flash')" title="Produção">
+        <i class="fas fa-bolt"></i><span class="nav-text">Produção</span>
     </button>
-    <button class="nav-btn" onclick="showPanel('painel-offline')">
+    <button class="nav-btn" onclick="showPanel('painel-offline')" title="Processar Logs">
         <i class="fas fa-file-signature"></i><span class="nav-text">Processar Logs</span>
     </button>
-    <button class="nav-btn" onclick="showPanel('painel-perfis')">
-        <i class="fas fa-id-card"></i><span class="nav-text">Perfis Hardware</span>
+    <button class="nav-btn" onclick="showPanel('painel-perfis')" title="Perfis & Manuais">
+        <i class="fas fa-id-card"></i><span class="nav-text">Perfis & Manuais</span>
     </button>
-    <button class="nav-btn" onclick="showPanel('painel-arquivos')">
+    <button class="nav-btn" onclick="showPanel('painel-arquivos')" title="Firmwares (.bin)">
         <i class="fas fa-folder-open"></i><span class="nav-text">Firmwares (.bin)</span>
     </button>
-    <button class="nav-btn" onclick="showPanel('painel-etiquetas')">
+    <button class="nav-btn" onclick="showPanel('painel-etiquetas')" title="Módulo ZPL">
         <i class="fas fa-tags"></i><span class="nav-text">Módulo ZPL</span>
     </button>
-    <button class="nav-btn" onclick="showPanel('painel-logs')">
+    <button class="nav-btn" onclick="showPanel('painel-logs')" title="Histórico (CSV)">
         <i class="fas fa-database"></i><span class="nav-text">Histórico (CSV)</span>
     </button>
     
-    <button class="nav-btn btn-exit" onclick="fecharAplicacao()">
-        <i class="fas fa-power-off"></i><span class="nav-text">Encerrar Aplicação</span>
+    <button class="nav-btn" onclick="showPanel('painel-definicoes')" title="Definições" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0; padding-top: 20px;">
+        <i class="fas fa-cog"></i><span class="nav-text">Definições</span>
     </button>
-    <div style="margin-top: auto; font-size: 11px; text-align: center; color: #666; padding-top: 15px;">
-        Versão 5.0 Auto
+    
+    <button class="nav-btn btn-exit" onclick="fecharAplicacao()" title="Encerrar Aplicação">
+        <i class="fas fa-power-off"></i><span class="nav-text">Encerrar</span>
+    </button>
+    
+    <div class="sidebar-details text-center w-100" style="margin-top: 15px; font-size: 11px; color: #666;">
     </div>
 </div>
 
 <div class="content">
     
-    <!-- PAINEL 1: FLASH & MONITOR -->
+    <!-- ==========================================
+         PAINEL 1: PRODUÇÃO (FLASH E MONITOR)
+         ========================================== -->
     <div id="painel-flash" class="panel active">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 style="color: var(--primary); font-weight: 700; margin:0;">Painel de Produção</h2>
@@ -206,13 +270,12 @@
                     <i class="fas fa-tag me-1"></i> ZPL: <span id="label-name" class="text-danger">Nenhum</span>
                 </span>
                 <span id="perfil-ativo-badge" class="badge-profile" onclick="cancelarPerfil()" title="Clique para cancelar perfil">
-                    <i class="fas fa-info-circle me-1"></i> Perfil: Nenhum
+                    <i class="fas fa-info-circle me-1"></i> Perfil: <span id="perfil-name">Manual</span>
                 </span>
             </div>
         </div>
         
         <div class="row">
-            <!-- COLUNA 1: CONFIGURAÇÃO -->
             <div class="col-md-3">
                 <div class="custom-card">
                     <h5 class="mb-4 text-secondary text-uppercase" style="font-size: 0.9rem; font-weight: 700;">
@@ -242,22 +305,16 @@
 
                     <hr class="text-muted opacity-25">
                     
-                    <label class="fw-bold small text-primary mb-1">
-                        <i class="fas fa-print me-1"></i> IP DA ZEBRA (Opcional)
-                    </label>
-                    <input type="text" id="ip-impressora" class="form-control border-primary mb-3" placeholder="Ex: 192.168.1.50" title="Deixe vazio para fazer apenas download do ZPL">
-
-                    <button id="btn-instalar" onclick="iniciar('flash_limpo')" class="btn btn-primary w-100 py-3 fw-bold shadow mb-3">
-                        <i class="fas fa-download me-2"></i> INSTALAR FIRMWARE
+                    <button onclick="iniciar('flash_limpo')" class="btn btn-primary w-100 py-2 fw-bold shadow mb-2">
+                        <i class="fas fa-download me-2"></i> APENAS FLASH
                     </button>
                     
                     <button onclick="iniciar('apenas_limpar')" class="btn btn-outline-danger w-100 py-2 fw-bold" style="border-width: 2px;">
-                        <i class="fas fa-trash me-2"></i> LIMPAR MEMÓRIA
+                        <i class="fas fa-eraser me-2"></i> APENAS LIMPAR
                     </button>
                 </div>
             </div>
 
-            <!-- COLUNA 2: CONSOLA -->
             <div class="col-md-6">
                 <div class="custom-card p-0" style="overflow: hidden; border: none; background: transparent; box-shadow: none;">
                     <div class="console-tabs">
@@ -271,37 +328,25 @@
                     
                     <div class="console-wrapper">
                         <div class="console-toolbar">
-                            <!-- Toolbar Instalação -->
                             <div id="tools-install" class="d-flex align-items-center w-100 justify-content-between">
                                 <span class="text-white fw-bold small">STATUS: <span id="status-text" class="text-info">PRONTO</span></span>
                                 <div>
-                                    <button onclick="guardarLogs()" class="btn btn-sm btn-outline-light me-1" title="Guardar em .txt">
-                                        <i class="fas fa-save"></i>
-                                    </button>
-                                    <button onclick="limparEcra()" class="btn btn-sm btn-outline-secondary" title="Limpar">
-                                        <i class="fas fa-eraser"></i>
-                                    </button>
+                                    <button onclick="guardarLogs()" class="btn btn-sm btn-outline-light me-1" title="Guardar em .txt"><i class="fas fa-save"></i></button>
+                                    <button onclick="limparEcra()" class="btn btn-sm btn-outline-secondary" title="Limpar"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                             
-                            <!-- Toolbar Monitor -->
                             <div id="tools-monitor" class="d-flex align-items-center w-100 justify-content-between" style="display: none !important;">
                                 <div class="d-flex align-items-center">
                                     <select id="monitorBaud" class="form-select form-select-sm bg-dark text-white border-secondary me-2" style="width: 100px;">
                                         <option value="115200" selected>115200</option>
                                         <option value="9600">9600</option>
                                     </select>
-                                    <button onclick="toggleMonitor()" id="btn-monitor" class="btn btn-sm btn-outline-info fw-bold">
-                                        <i class="fas fa-plug me-1"></i> Conectar
-                                    </button>
+                                    <button onclick="toggleMonitor()" id="btn-monitor" class="btn btn-sm btn-outline-info fw-bold"><i class="fas fa-plug me-1"></i> Conectar</button>
                                 </div>
                                 <div>
-                                    <button onclick="guardarLogs()" class="btn btn-sm btn-outline-light me-1" title="Guardar Logs">
-                                        <i class="fas fa-save"></i> .txt
-                                    </button>
-                                    <button onclick="limparEcra()" class="btn btn-sm btn-outline-secondary" title="Limpar">
-                                        <i class="fas fa-eraser"></i>
-                                    </button>
+                                    <button onclick="guardarLogs()" class="btn btn-sm btn-outline-light me-1" title="Guardar Logs"><i class="fas fa-save"></i> .txt</button>
+                                    <button onclick="limparEcra()" class="btn btn-sm btn-outline-secondary" title="Limpar"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -311,41 +356,31 @@
                         </div>
                         
                         <div id="consola" class="console-output">
-                            <div style="color: #666;">> Sistema pronto.</div>
+                            <div style="color: #666;">> Sistema pronto e aguardando comandos.</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- COLUNA 3: AUTOMAÇÃO -->
             <div class="col-md-3">
                 <div class="custom-card h-100" style="border-top-color: #FF9800;">
                     <h5 class="mb-3 text-warning text-uppercase" style="font-size: 0.9rem; font-weight: 700;">
-                        <i class="fas fa-robot me-2"></i>Automação ZPL
+                        <i class="fas fa-robot me-2"></i>Fluxo de Produção
                     </h5>
                     
-                    <button id="btn-1clique" onclick="processarTudoCompleto()" class="btn btn-mega w-100 py-3 mb-3 fw-bold">
-                        <i class="fas fa-bolt fa-lg me-2"></i> 1 CLIQUE:<br><span class="small" style="font-weight: 600;">Lê Logs + CSV + Zebra</span>
+                    <button id="btn-automacao" onclick="iniciarAutomacaoMES()" class="btn btn-mega w-100 py-3 mb-4 fw-bold">
+                        <i class="fas fa-bolt fa-lg me-2"></i> TUDO EM 1<br>
+                        <span class="small" style="font-weight: 600;">Flash + Lê Logs + ZPL + CSV</span>
                     </button>
 
-                    <div class="d-flex gap-2 mb-3">
-                        <button onclick="capturarDados()" class="btn btn-sm btn-outline-warning w-100 fw-bold" title="Apenas ler dados da consola">
-                            <i class="fas fa-eye me-1"></i> Ler Só
-                        </button>
-                        <button onclick="guardarECsv()" class="btn btn-sm btn-outline-success w-100 fw-bold" title="Forçar gravação CSV">
-                            <i class="fas fa-save me-1"></i> Salvar Só
-                        </button>
-                    </div>
-
-                    <p class="small fw-bold text-muted mb-2"><i class="fas fa-search me-2"></i>DADOS LIDOS:</p>
+                    <p class="small fw-bold text-muted mb-2"><i class="fas fa-search me-2"></i>DADOS EXTRAÍDOS:</p>
                     <div class="mb-2">
-                        <label class="small fw-bold">MAC Address</label>
-                        <input type="text" id="input-mac" class="form-control form-control-sm prod-input">
+                        <label class="small fw-bold">MAC Address (Minúsculo)</label>
+                        <input type="text" id="input-mac" class="form-control form-control-sm prod-input" readonly>
                     </div>
                     
-                    <!-- CAMPO SN MELHORADO COM BOTÃO DE RECARREGAR -->
                     <div class="mb-2">
-                        <label class="small fw-bold text-warning">SN (Podes editar manualmente)</label>
+                        <label class="small fw-bold text-warning">SN (Aleatório/Editável)</label>
                         <div class="input-group input-group-sm">
                             <input type="text" id="input-sn" class="form-control prod-input sn-input">
                             <button class="btn btn-warning fw-bold" onclick="gerarNovoSN('input-sn')" type="button" title="Gerar outro SN Aleatório"><i class="fas fa-sync-alt"></i></button>
@@ -354,18 +389,24 @@
                     
                     <div class="mb-2">
                         <label class="small fw-bold">IMEI (GSM)</label>
-                        <input type="text" id="input-imei" class="form-control form-control-sm prod-input">
+                        <input type="text" id="input-imei" class="form-control form-control-sm prod-input" readonly>
                     </div>
                     <div class="mb-3">
                         <label class="small fw-bold text-danger">CIMI</label>
-                        <input type="text" id="input-cimi" class="form-control form-control-sm prod-input border-danger">
+                        <input type="text" id="input-cimi" class="form-control form-control-sm prod-input border-danger" readonly>
                     </div>
+                    
+                    <button onclick="forcarLeituraVisual()" class="btn btn-sm btn-dark w-100 mb-2">
+                        <i class="fas fa-eye"></i> Ler Consola Manualmente
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- PAINEL 2: OFFLINE LOGS -->
+    <!-- ==========================================
+         PAINEL 2: OFFLINE LOGS
+         ========================================== -->
     <div id="painel-offline" class="panel">
         <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">Processamento de Logs (Modo Offline)</h2>
         <div class="row">
@@ -389,16 +430,13 @@
                             <label class="small fw-bold">MAC Address</label>
                             <input type="text" id="off-mac" class="form-control prod-input">
                         </div>
-                        
-                        <!-- CAMPO SN OFFLINE MELHORADO -->
                         <div class="col-6">
                             <label class="small fw-bold text-warning">SN (Aleatório/Editável)</label>
                             <div class="input-group">
                                 <input type="text" id="off-sn" class="form-control prod-input sn-input">
-                                <button class="btn btn-warning" onclick="gerarNovoSN('off-sn')" type="button" title="Gerar Novo SN Aleatório"><i class="fas fa-sync-alt"></i></button>
+                                <button class="btn btn-warning" onclick="gerarNovoSN('off-sn')" type="button"><i class="fas fa-sync-alt"></i></button>
                             </div>
                         </div>
-                        
                         <div class="col-6">
                             <label class="small fw-bold">IMEI</label>
                             <input type="text" id="off-imei" class="form-control prod-input">
@@ -408,43 +446,72 @@
                             <input type="text" id="off-cimi" class="form-control prod-input border-danger">
                         </div>
                     </div>
-                    <button class="btn btn-mega w-100 py-3 fw-bold shadow" onclick="processarOfflineCompleto()">
-                        <i class="fas fa-print fa-lg me-2"></i> GERAR ETIQUETA / IMPRIMIR E SALVAR
-                    </button>
+                    
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary w-50 py-2 fw-bold" onclick="processarOfflineCompleto(false)">
+                            <i class="fas fa-file-code me-2"></i> Só Gerar ZPL
+                        </button>
+                        <button class="btn btn-success w-50 py-2 fw-bold" onclick="processarOfflineCompleto(true)">
+                            <i class="fas fa-save me-2"></i> Salvar e Imprimir
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- PAINEL 3: PERFIS -->
+    <!-- ==========================================
+         PAINEL 3: PERFIS E PDFS
+         ========================================== -->
     <div id="painel-perfis" class="panel">
-        <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">Perfis de Hardware</h2>
-        <div class="custom-card mb-4" style="border-left: 5px solid var(--accent);">
-            <div class="row g-3">
+        <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">Perfis de Hardware & Manuais</h2>
+        
+        <!-- ZONA RESTRITA: CRIAR PERFIL (Corrigida a largura para o PDF não cortar) -->
+        <div class="custom-card admin-only mb-4" style="background: #fff8e1; border-color: #ffc107;">
+            <h5 class="mb-3 text-warning fw-bold"><i class="fas fa-lock me-2"></i>Área Admin: Criar Perfil</h5>
+            <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <input type="text" id="p-nome" class="form-control" placeholder="Nome do Perfil">
+                    <label class="small fw-bold text-muted">Nome do Perfil</label>
+                    <input type="text" id="p-nome" class="form-control" placeholder="Ex: Placa V2">
                 </div>
                 <div class="col-md-3">
+                    <label class="small fw-bold text-muted">Firmware (.bin)</label>
                     <select id="p-file" class="form-select"></select>
                 </div>
                 <div class="col-md-3">
+                    <label class="small fw-bold text-muted">Velocidade</label>
                     <select id="p-baud" class="form-select">
-                        <option value="115200">115200 (Seguro)</option>
-                        <option value="460800" selected>460800 (Padrão)</option>
-                        <option value="921600">921600 (Rápido)</option>
+                        <option value="115200">115200</option>
+                        <option value="460800" selected>460800</option>
+                        <option value="921600">921600</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <button class="btn btn-success w-100 fw-bold" onclick="salvarPerfil()">
-                        <i class="fas fa-check me-2"></i> Guardar Perfil
+                    <label class="small fw-bold text-muted">Molde ZPL</label>
+                    <select id="p-zpl" class="form-select"></select>
+                </div>
+                
+                <!-- O input de PDF agora ocupa grande parte da segunda linha -->
+                <div class="col-md-8">
+                    <label class="small fw-bold text-muted">Manual (PDF Opcional)</label>
+                    <input type="file" id="p-pdf" class="form-control" accept=".pdf">
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-warning w-100 fw-bold py-2" onclick="salvarPerfil()">
+                        <i class="fas fa-save me-1"></i> Gravar Perfil
                     </button>
                 </div>
             </div>
         </div>
-        <div class="profile-grid" id="grid-perfis"></div>
+
+        <div class="row" id="grid-perfis">
+            <!-- Os perfis vão aparecer aqui gerados pelo JS -->
+        </div>
     </div>
 
-    <!-- PAINEL 4: FIRMWARES -->
+    <!-- ==========================================
+         PAINEL 4: FIRMWARES
+         ========================================== -->
     <div id="painel-arquivos" class="panel">
         <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">Biblioteca de Firmwares</h2>
         <div class="row">
@@ -453,7 +520,7 @@
                     <h5 class="mb-3">Adicionar Ficheiro (.bin)</h5>
                     <div class="input-group mb-4">
                         <input type="file" id="upFile" class="form-control" accept=".bin">
-                        <button class="btn btn-dark" onclick="upload()">
+                        <button class="btn btn-dark" onclick="uploadArquivo('upFile', '/upload')">
                             <i class="fas fa-upload"></i> Subir
                         </button>
                     </div>
@@ -468,16 +535,18 @@
         </div>
     </div>
 
-    <!-- PAINEL 5: ETIQUETAS ZPL -->
+    <!-- ==========================================
+         PAINEL 5: ETIQUETAS ZPL
+         ========================================== -->
     <div id="painel-etiquetas" class="panel">
         <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">Módulo ZPL (Impressão)</h2>
         <div class="row">
             <div class="col-md-5">
                 <div class="custom-card mb-4" style="border-left: 5px solid var(--accent);">
-                    <h5 class="mb-3">Carregar Novo Modelo</h5>
+                    <h5 class="mb-3">Carregar Novo Modelo Livre</h5>
                     <div class="input-group mb-2">
                         <input type="file" id="upEtiqueta" class="form-control" accept=".zpl,.txt,.prn,.lbl,.nlbl">
-                        <button class="btn btn-dark" onclick="uploadEtiqueta()">
+                        <button class="btn btn-dark" onclick="uploadArquivo('upEtiqueta', '/upload_etiqueta')">
                             <i class="fas fa-upload me-2"></i> Subir
                         </button>
                     </div>
@@ -493,30 +562,53 @@
         </div>
     </div>
 
-    <!-- PAINEL 6: LOGS CSV -->
+    <!-- ==========================================
+         PAINEL 6: HISTÓRICO CSV (COM FILTROS E FORÇAR ATUALIZAÇÃO)
+         ========================================== -->
     <div id="painel-logs" class="panel">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 style="margin:0; color: var(--primary); font-weight: 700;">Histórico de Produção</h2>
             <div>
-                <button onclick="exportarCSV()" class="btn btn-success fw-bold shadow-sm me-2">
+                <!-- BOTÃO DE DOWNLOAD ATUALIZADO (Adicionado Cache Busting) -->
+                <button onclick="window.location.href='/api/export_csv?t=' + new Date().getTime()" class="btn btn-success fw-bold shadow-sm me-2">
                     <i class="fas fa-file-excel me-2"></i> Descarregar CSV
                 </button>
-                <button onclick="apagarCSV()" class="btn btn-outline-danger fw-bold shadow-sm">
-                    <i class="fas fa-trash-alt me-2"></i> Limpar Registo
+                <button onclick="apagarTudoCSV()" class="btn btn-outline-danger fw-bold shadow-sm admin-only" style="display: inline-block;">
+                    <i class="fas fa-trash-alt me-2"></i> Limpar Registo (Admin)
                 </button>
             </div>
         </div>
+        
+        <!-- BARRA DE FILTROS -->
+        <div class="custom-card mb-3 py-3 bg-light">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted">Filtrar por Data</label>
+                    <input type="date" id="filtro-data" class="form-control" onchange="renderizarTabelaLogs()">
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted">Filtrar por Perfil</label>
+                    <input type="text" id="filtro-perfil" class="form-control" placeholder="Escreva o nome do perfil..." onkeyup="renderizarTabelaLogs()">
+                </div>
+                <div class="col-md-4">
+                    <label class="small fw-bold text-muted">Filtrar por Firmware</label>
+                    <input type="text" id="filtro-fw" class="form-control" placeholder="Escreva o nome do bin..." onkeyup="renderizarTabelaLogs()">
+                </div>
+            </div>
+        </div>
+
         <div class="custom-card p-0 overflow-hidden">
             <div class="table-responsive">
                 <table class="table mb-0 table-hover table-logs">
-                    <thead class="table-light">
+                    <thead class="table-dark">
                         <tr>
                             <th>Data/Hora</th>
                             <th>MAC Address</th>
-                            <th>SN (Aleatório)</th>
+                            <th>SN</th>
                             <th>IMEI</th>
                             <th>CIMI</th>
-                            <th>Firmware</th>
+                            <th>Perfil / Firmware</th>
+                            <th class="admin-only-cell">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="table-logs-body"></tbody>
@@ -525,9 +617,122 @@
         </div>
     </div>
 
+    <!-- ==========================================
+         PAINEL 7: DEFINIÇÕES
+         ========================================== -->
+    <div id="painel-definicoes" class="panel">
+        <h2 class="mb-4" style="color: var(--primary); font-weight: 700;">Definições do Sistema</h2>
+        <div class="row">
+            <!-- IMPRESSORA -->
+            <div class="col-md-6">
+                <div class="custom-card">
+                    <h5 class="fw-bold text-primary mb-3"><i class="fas fa-network-wired me-2"></i> Impressora de Rede</h5>
+                    <label class="fw-bold small text-muted mb-1">IP DA ZEBRA (Porta 9100 RAW)</label>
+                    <input type="text" id="ip-impressora" class="form-control border-primary mb-3" placeholder="Ex: 192.168.1.50">
+                    <p class="small text-secondary mb-0">
+                        <i class="fas fa-info-circle me-1"></i> Se este campo estiver vazio, o sistema irá apenas fazer o <b>download</b> do ficheiro ZPL gerado para o computador.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- ACESSO ADMIN -->
+            <div class="col-md-6">
+                <div class="custom-card border-danger" style="border-top-width: 5px;">
+                    <h5 class="fw-bold text-danger mb-3"><i class="fas fa-user-shield me-2"></i> Acesso Administrador</h5>
+                    <p class="small text-muted mb-3">O modo Administrador permite a criação de Perfis de Hardware, anexação de Manuais PDF e a capacidade de apagar o Histórico de Produção.</p>
+                    <div class="input-group">
+                        <input type="password" id="admin-pwd" class="form-control" placeholder="Introduza a senha de acesso...">
+                        <button class="btn btn-danger fw-bold" onclick="tentarLoginAdmin()">
+                            <i class="fas fa-unlock me-1"></i> Desbloquear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<!-- CÓDIGO JAVASCRIPT DETALHADO (TOTALMENTE EXPANDIDO) -->
+<!-- ==========================================
+     MODAIS DE AUTOMAÇÃO (Obrigações do Operador)
+     ========================================== -->
+
+<!-- MODAL 1: PEDIR RESET AO OPERADOR -->
+<div class="modal fade" id="modalReset" data-bs-backdrop="static" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-warning" style="border-width: 3px;">
+      <div class="modal-body text-center p-5">
+        <i class="fas fa-hand-pointer fa-4x text-warning mb-4 pulse-animation"></i>
+        <h3 class="fw-bold text-primary">Flash Concluído!</h3>
+        <p class="text-muted fs-5 mt-3">Para a aplicação conseguir ler o MAC e o IMEI, precisa de reiniciar a placa.</p>
+        <p class="fw-bold text-danger">Pressione o botão de RESET (ou EN) na placa agora.</p>
+        
+        <button type="button" class="btn btn-warning btn-lg fw-bold w-100 mt-4 py-3" onclick="confirmarResetFeito()">
+            <i class="fas fa-check-circle me-2"></i> JÁ PRESSIONEI O RESET
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL 2: CONFIRMAÇÃO DOS DADOS E QUANTIDADE -->
+<div class="modal fade" id="modalConfirmacao" data-bs-backdrop="static" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fw-bold"><i class="fas fa-clipboard-check me-2"></i> Validar Dados de Produção</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="cancelarAutomacao()"></button>
+      </div>
+      <div class="modal-body p-4">
+        
+        <div class="alert alert-info small fw-bold mb-4">
+            <i class="fas fa-info-circle me-1"></i> Confirme os identificadores extraídos da placa. O MAC já foi convertido para formato limpo (minúsculas, sem pontos).
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <label class="fw-bold small text-muted">MAC Address</label>
+                <input type="text" id="mod-mac" class="form-control form-control-lg font-monospace bg-light" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bold small text-warning">Serial Number (SN)</label>
+                <input type="text" id="mod-sn" class="form-control form-control-lg font-monospace border-warning bg-warning-subtle" title="Pode editar este valor agora se desejar.">
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bold small text-muted">IMEI GSM</label>
+                <input type="text" id="mod-imei" class="form-control font-monospace bg-light" readonly>
+            </div>
+            <div class="col-md-6">
+                <label class="fw-bold small text-muted">CIMI GSM</label>
+                <input type="text" id="mod-cimi" class="form-control font-monospace bg-light" readonly>
+            </div>
+        </div>
+
+        <div class="bg-light p-4 rounded border text-center">
+            <label class="fw-bold text-primary fs-5 mb-2"><i class="fas fa-print me-2"></i> Quantidade de Etiquetas</label>
+            <p class="small text-muted mb-3">Quantas etiquetas iguais deseja imprimir para esta máquina?</p>
+            <input type="number" id="mod-qtd" class="form-control form-control-lg fw-bold text-center mx-auto" style="width: 150px; font-size: 1.5rem;" value="1" min="1" max="50">
+        </div>
+
+      </div>
+      <div class="modal-footer bg-light">
+        <button type="button" class="btn btn-outline-secondary fw-bold" data-bs-dismiss="modal" onclick="cancelarAutomacao()">Cancelar</button>
+        <button type="button" class="btn btn-success fw-bold px-5 py-2" onclick="concluirFluxoAutomatico()">
+            <i class="fas fa-save me-2"></i> SALVAR HISTÓRICO E IMPRIMIR
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+    .pulse-animation { animation: pulse 2s infinite; }
+</style>
+
+<!-- ==========================================
+     CÓDIGO JAVASCRIPT DETALHADO (VERSÃO 6.1)
+     ========================================== -->
 <script>
     const socket = io();
     const consola = document.getElementById('consola');
@@ -535,71 +740,66 @@
     // Variáveis Globais de Estado
     let activeTab = 'install';
     let monitorConnected = false;
+    let isAdmin = false;
     let perfisList = [];
-    let perfilBloqueado = false;
+    let logHistory = [];
+    let perfilAtivo = null;
     
-    // IP DA IMPRESSORA SALVO NO NAVEGADOR
+    let isAutoModeRunning = false;
+    let checkDataInterval = null;
+    let autoTimeout = null;
+    const modalResetObj = new bootstrap.Modal(document.getElementById('modalReset'));
+    const modalConfirmObj = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+
     const ipInput = document.getElementById('ip-impressora');
     ipInput.value = localStorage.getItem('ipImpressora') || "";
-    ipInput.addEventListener('input', () => {
-        localStorage.setItem('ipImpressora', ipInput.value);
-    });
+    ipInput.addEventListener('input', () => localStorage.setItem('ipImpressora', ipInput.value));
 
-    // ETIQUETA ATIVA SALVA NO NAVEGADOR
     let etiquetaAtiva = localStorage.getItem('etiquetaAtiva') || null;
 
-    // --- NOVA FUNÇÃO PARA GERAR SN ALEATÓRIO À FORÇA ---
+    // --- INTERAÇÕES UI BÁSICAS ---
+    
+    // Abrir/Fechar a barra lateral
+    function toggleSidebar() {
+        document.querySelector('.sidebar').classList.toggle('expanded');
+    }
+
     function gerarNovoSN(campoId) {
         const novoSN = Math.floor(Math.random() * 9000000000) + 1000000000;
         document.getElementById(campoId).value = novoSN;
     }
 
-    // --- SISTEMA DE NAVEGAÇÃO ---
+    function limparCamposLeitura() {
+        ['input-mac', 'input-sn', 'input-imei', 'input-cimi'].forEach(id => {
+            document.getElementById(id).value = "";
+        });
+    }
+
     function showPanel(id) {
-        document.querySelectorAll('.panel').forEach(p => {
-            p.classList.remove('active');
-        });
-        
-        document.querySelectorAll('.nav-btn').forEach(b => {
-            b.classList.remove('active');
-        });
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         
         const navMap = {
-            'painel-flash': 0, 
-            'painel-offline': 1, 
-            'painel-perfis': 2, 
-            'painel-arquivos': 3, 
-            'painel-etiquetas': 4, 
-            'painel-logs': 5
+            'painel-flash': 0, 'painel-offline': 1, 'painel-perfis': 2, 
+            'painel-arquivos': 3, 'painel-etiquetas': 4, 'painel-logs': 5,
+            'painel-definicoes': 6
         };
         
         const buttons = document.querySelectorAll('.nav-btn');
-        if (buttons[navMap[id]]) {
-            buttons[navMap[id]].classList.add('active');
-        }
+        if (buttons[navMap[id]]) buttons[navMap[id]].classList.add('active');
         
         document.getElementById(id).classList.add('active');
         
-        if (id === 'painel-flash') {
-            carregarDados();
-        } else if (id === 'painel-arquivos') {
-            carregarArquivos();
-        } else if (id === 'painel-perfis') {
-            carregarDadosPerfis();
-        } else if (id === 'painel-etiquetas') {
-            carregarEtiquetas();
-        } else if (id === 'painel-logs') {
-            carregarLogs();
-        }
+        if (id === 'painel-flash') { carregarPortas(); carregarArquivos(); }
+        else if (id === 'painel-arquivos') carregarArquivos();
+        else if (id === 'painel-perfis') carregarDadosPerfis();
+        else if (id === 'painel-etiquetas') carregarEtiquetas();
+        else if (id === 'painel-logs') carregarLogsDoCSV();
     }
 
-    // --- CONTROLO DA CONSOLA VISUAL ---
     function switchConsole(mode) {
         activeTab = mode;
-        document.querySelectorAll('.console-tab').forEach(t => {
-            t.classList.remove('active');
-        });
-        
+        document.querySelectorAll('.console-tab').forEach(t => t.classList.remove('active'));
         document.getElementById('tab-' + mode).classList.add('active');
         
         const toolsInstall = document.getElementById('tools-install');
@@ -617,7 +817,11 @@
         consola.scrollTop = consola.scrollHeight;
     }
 
-    // --- GUARDAR LOGS (.TXT) ---
+    function limparEcra() { 
+        consola.innerHTML = ""; 
+        document.getElementById('barra').style.width = "0%"; 
+    }
+
     function guardarLogs() { 
         const blob = new Blob([consola.innerText], {type:'text/plain'});
         const a = document.createElement('a'); 
@@ -626,387 +830,19 @@
         a.click();
     }
 
-    // --- MOTOR ZPL (IMPRESSÃO DIRETA OU DOWNLOAD) ---
-    async function executarMotorZPL(mac, sn, imei, cimi) {
-        const ip = ipInput.value.trim();
-        
-        try {
-            const resposta = await fetch('/api/processar_zpl', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ 
-                    mac: mac, 
-                    imei: imei, 
-                    sn: sn, 
-                    label_file: etiquetaAtiva, 
-                    ip_impressora: ip 
-                }) 
-            });
-            
-            const jsonZpl = await resposta.json();
-            
-            if (jsonZpl.sucesso) {
-                if (jsonZpl.impresso_direto) {
-                    consola.innerHTML += `<div class='log-line log-success'>>> <i class="fas fa-print"></i> ETIQUETA ENVIADA (IP: ${ip})!</div>`;
-                } else {
-                    const blob = new Blob([jsonZpl.zpl], {type:'text/plain'});
-                    const a = document.createElement('a');
-                    a.href = window.URL.createObjectURL(blob);
-                    
-                    const extensaoOriginal = etiquetaAtiva.split('.').pop();
-                    a.download = `Etiqueta_${sn || imei || "GERADO"}.${extensaoOriginal}`;
-                    
-                    a.click();
-                    consola.innerHTML += `<div class='log-line log-success'>>> <i class="fas fa-download"></i> FICHEIRO .${extensaoOriginal.toUpperCase()} DESCARREGADO!</div>`;
-                }
-            } else {
-                alert("Erro no Módulo ZPL: " + jsonZpl.erro);
-                consola.innerHTML += `<div class='log-line log-error'>>> ERRO IMPRESSORA: ${jsonZpl.erro}</div>`;
-            }
-        } catch (e) {
-            console.error("Falha ao comunicar com Motor ZPL", e);
+    // --- MODO ADMINISTRADOR (LOGIN) ---
+    function tentarLoginAdmin() {
+        const pwdInput = document.getElementById('admin-pwd').value;
+        if (pwdInput === "admin123") {
+            isAdmin = true;
+            document.body.classList.add('is-admin');
+            alert("Sucesso! Modo Administrador ativado.");
+            document.getElementById('admin-pwd').value = "";
+            carregarDadosPerfis();
+            carregarLogsDoCSV();
+        } else {
+            alert("Senha incorreta. Acesso negado.");
         }
-    }
-
-    // --- AUTOMAÇÃO DE PRODUÇÃO (BOTÃO 1 CLIQUE) ---
-    async function processarTudoCompleto() {
-        if (!monitorConnected) {
-            return alert("Ligue o Monitor Serial primeiro!");
-        }
-        
-        if (!etiquetaAtiva) { 
-            showPanel('painel-etiquetas'); 
-            return alert("Ative um modelo ZPL na aba Módulo ZPL!"); 
-        }
-
-        const btn = document.getElementById('btn-1clique');
-        btn.disabled = true; 
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin fa-lg me-2"></i> A PROCESSAR...`;
-        
-        consola.innerHTML += `<div class='log-line log-warning'>>> A INICIAR AUTOMAÇÃO DE PRODUÇÃO...</div>`;
-        consola.scrollTop = consola.scrollHeight;
-
-        try {
-            const res = await fetch('/analisar_buffer', { method: 'POST' });
-            const dados = await res.json();
-
-            let inMac = document.getElementById('input-mac');
-            let inSn = document.getElementById('input-sn');
-            let inImei = document.getElementById('input-imei');
-            let inCimi = document.getElementById('input-cimi');
-            
-            // Retira os dois pontos (:) do MAC E passa para minúsculas
-            if (dados.mac) {
-                inMac.value = dados.mac.replace(/:/g, '').toLowerCase(); 
-            }
-            
-            if (dados.imei) {
-                inImei.value = dados.imei; 
-            }
-            
-            if (dados.cimi) {
-                inCimi.value = dados.cimi;
-            }
-
-            if (!inSn.value && dados.sn) {
-                inSn.value = dados.sn;
-            } else if (!inSn.value) {
-                inSn.value = Math.floor(Math.random() * 9000000000) + 1000000000; 
-            }
-
-            const payload = {
-                mac: inMac.value,
-                sn: inSn.value,
-                imei: inImei.value,
-                cimi: inCimi.value
-            };
-
-            if (!payload.mac && !payload.imei && !payload.cimi) {
-                alert("Atenção: Não foram detetados identificadores nas logs.");
-                throw new Error("Sem dados");
-            }
-
-            await fetch('/guardar_csv_manual', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify(payload) 
-            });
-            
-            await executarMotorZPL(payload.mac, payload.sn, payload.imei, payload.cimi);
-
-        } catch(e) { 
-            console.error("Automação falhou:", e); 
-        } finally {
-            btn.disabled = false;
-            btn.innerHTML = `<i class="fas fa-bolt fa-lg me-2"></i> 1 CLIQUE:<br><span class="small" style="font-weight:600;">Lê Logs + CSV + Zebra</span>`;
-            consola.scrollTop = consola.scrollHeight;
-        }
-    }
-
-    // --- MODO OFFLINE (FICHEIROS DE LOG LOCAIS) ---
-    async function analisarOffline() {
-        const input = document.getElementById('offline-file');
-        
-        if (input.files.length === 0) {
-            return alert("Selecione um ficheiro de log .txt!");
-        }
-        
-        const fd = new FormData(); 
-        fd.append('file', input.files[0]);
-        
-        try {
-            const res = await fetch('/analisar_logs_ficheiro', { method: 'POST', body: fd });
-            if (!res.ok) {
-                throw new Error("A rota offline não foi encontrada.");
-            }
-            
-            const dados = await res.json();
-            if (dados.erro) {
-                return alert(dados.erro);
-            }
-            
-            // Retira os dois pontos (:) do MAC E passa para minúsculas no ecrã Offline
-            if (dados.mac) {
-                document.getElementById('off-mac').value = dados.mac.replace(/:/g, '').toLowerCase();
-            } else {
-                document.getElementById('off-mac').value = '';
-            }
-            
-            document.getElementById('off-imei').value = dados.imei || '';
-            document.getElementById('off-cimi').value = dados.cimi || '';
-            
-            let currentOffSn = document.getElementById('off-sn').value;
-            if (!currentOffSn && dados.sn) {
-                document.getElementById('off-sn').value = dados.sn;
-            } else if (!currentOffSn) {
-                document.getElementById('off-sn').value = Math.floor(Math.random() * 9000000000) + 1000000000;
-            }
-            
-            alert("Logs lidas com sucesso!");
-        } catch(e) { 
-            alert("Erro de comunicação: " + e.message); 
-        }
-    }
-
-    async function processarOfflineCompleto() {
-        const mac = document.getElementById('off-mac').value;
-        const sn = document.getElementById('off-sn').value;
-        const imei = document.getElementById('off-imei').value;
-        const cimi = document.getElementById('off-cimi').value;
-        
-        if (!mac && !imei && !cimi) {
-            return alert("Sem dados para processar!");
-        }
-        
-        if (!etiquetaAtiva) { 
-            showPanel('painel-etiquetas'); 
-            return alert("Ative um modelo ZPL primeiro!"); 
-        }
-        
-        try {
-            await fetch('/guardar_csv_manual', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ mac, imei, sn, cimi }) 
-            });
-            await executarMotorZPL(mac, sn, imei, cimi);
-            alert("Processamento offline concluído com sucesso!");
-        } catch(e) { 
-            alert("Erro ao processar."); 
-        }
-    }
-
-    // --- GESTÃO DE ETIQUETAS E ZPL ---
-    function atualizarLabelBadge() {
-        const badgeSpan = document.getElementById('label-name');
-        const badgeContainer = document.getElementById('label-ativo-badge');
-        
-        if (etiquetaAtiva) { 
-            badgeSpan.innerText = etiquetaAtiva; 
-            badgeSpan.className = "text-primary fw-bold"; 
-            badgeContainer.classList.add('active'); 
-        } else { 
-            badgeSpan.innerText = "Nenhum"; 
-            badgeSpan.className = "text-danger"; 
-            badgeContainer.classList.remove('active'); 
-        }
-    }
-
-    async function carregarEtiquetas() {
-        const res = await fetch('/listar_etiquetas'); 
-        const files = await res.json();
-        const lista = document.getElementById('listaEtiquetas'); 
-        
-        lista.innerHTML = "";
-        
-        if (files.length === 0) { 
-            lista.innerHTML = "<li class='list-group-item text-muted'>Nenhum ficheiro carregado.</li>"; 
-            atualizarLabelBadge(); 
-            return; 
-        }
-        
-        files.forEach(f => {
-            const isAtiva = (f === etiquetaAtiva);
-            lista.innerHTML += `
-                <li class="list-group-item d-flex justify-content-between align-items-center ${isAtiva ? 'bg-light' : ''}" style="border-left: ${isAtiva ? '4px solid var(--accent)' : '1px solid #ddd'};">
-                    <span>
-                        <i class="fas fa-file-code me-2 ${isAtiva ? 'text-primary' : 'text-muted'}"></i>
-                        <strong class="${isAtiva ? 'text-primary' : ''}">${f}</strong>
-                        ${isAtiva ? '<span class="badge bg-primary ms-2">ATIVO</span>' : ''}
-                    </span>
-                    <div>
-                        <button class="btn btn-sm ${isAtiva ? 'btn-success' : 'btn-outline-primary'} me-2 fw-bold" onclick="ativarEtiqueta('${f}')">
-                            ${isAtiva ? '<i class="fas fa-check"></i>' : 'Ativar'}
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="apagarEtiqueta('${f}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </li>`;
-        });
-        atualizarLabelBadge();
-    }
-
-    function ativarEtiqueta(nome) { 
-        etiquetaAtiva = nome; 
-        localStorage.setItem('etiquetaAtiva', nome); 
-        carregarEtiquetas(); 
-    }
-    
-    async function uploadEtiqueta() { 
-        const input = document.getElementById('upEtiqueta'); 
-        if (input.files.length === 0) return; 
-        
-        const fd = new FormData(); 
-        fd.append('file', input.files[0]); 
-        
-        const res = await fetch('/upload_etiqueta', { method: 'POST', body: fd }); 
-        if (res.ok) { 
-            input.value = ""; 
-            carregarEtiquetas(); 
-        } 
-    }
-    
-    async function apagarEtiqueta(f) { 
-        if (confirm(`Apagar o modelo "${f}"?`)) { 
-            await fetch('/delete_etiqueta', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({filename: f}) 
-            }); 
-            
-            if (etiquetaAtiva === f) { 
-                etiquetaAtiva = null; 
-                localStorage.removeItem('etiquetaAtiva'); 
-            } 
-            carregarEtiquetas(); 
-        } 
-    }
-
-    // --- GESTÃO DE CSV ---
-    function exportarCSV() { 
-        window.location.href = '/api/export_csv'; 
-    }
-    
-    async function apagarCSV() { 
-        if (confirm("PERIGO: Deseja apagar todo o histórico de aparelhos guardados?")) { 
-            await fetch('/api/delete_csv', { method: 'POST' }); 
-            carregarLogs(); 
-        } 
-    }
-
-    // --- GESTÃO DE PERFIS ---
-    async function carregarDadosPerfis() {
-        await carregarArquivos(false);
-        const res = await fetch('/api/perfis'); 
-        perfisList = await res.json();
-        
-        const fRes = await fetch('/listar_ficheiros'); 
-        const files = await fRes.json();
-        
-        const sel = document.getElementById('p-file');
-        sel.innerHTML = files.map(f => `<option value="${f}">${f}</option>`).join('');
-        
-        const container = document.getElementById('grid-perfis');
-        if (perfisList.length === 0) { 
-            container.innerHTML = "<p class='text-muted'>Nenhum perfil criado.</p>"; 
-            return; 
-        }
-        
-        container.innerHTML = perfisList.map(p => `
-            <div class="custom-card py-3">
-                <h5 class="fw-bold text-primary">${p.nome}</h5>
-                <div class="small text-muted mb-3">
-                    <div><i class="fas fa-file-code me-2"></i>${p.file}</div>
-                    <div><i class="fas fa-tachometer-alt me-2"></i>${p.baud}</div>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-sm btn-primary flex-grow-1 fw-bold" onclick="aplicarPerfil(${p.id})">USAR</button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarPerfil(${p.id})"><i class="fas fa-trash"></i></button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    async function salvarPerfil() {
-        const nome = document.getElementById('p-nome').value;
-        const file = document.getElementById('p-file').value;
-        const baud = document.getElementById('p-baud').value;
-        
-        if (!nome || !file) return; 
-        
-        perfisList.push({ id: Date.now(), nome, file, baud });
-        
-        await fetch('/api/perfis', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(perfisList) 
-        });
-        
-        document.getElementById('p-nome').value = ""; 
-        carregarDadosPerfis();
-    }
-
-    async function eliminarPerfil(id) { 
-        if (!confirm("Eliminar perfil?")) return; 
-        
-        perfisList = perfisList.filter(p => p.id !== id); 
-        await fetch('/api/perfis', { 
-            method: 'POST', 
-            headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(perfisList) 
-        }); 
-        
-        carregarDadosPerfis(); 
-    }
-    
-    function aplicarPerfil(id) {
-        const perfil = perfisList.find(p => p.id === id);
-        
-        document.getElementById('selectFicheiro').value = perfil.file; 
-        document.getElementById('selectBaud').value = perfil.baud;
-        
-        document.getElementById('selectFicheiro').disabled = true; 
-        document.getElementById('selectBaud').disabled = true; 
-        perfilBloqueado = true;
-        
-        const badge = document.getElementById('perfil-ativo-badge'); 
-        badge.innerHTML = `<i class="fas fa-check-circle me-1"></i> Perfil: ${perfil.nome} <span class='small text-muted'>(Cancelar)</span>`; 
-        badge.classList.add('active');
-        
-        showPanel('painel-flash');
-    }
-
-    function cancelarPerfil() {
-        if (!perfilBloqueado) return; 
-        
-        document.getElementById('selectFicheiro').disabled = false; 
-        document.getElementById('selectBaud').disabled = false; 
-        perfilBloqueado = false;
-        
-        const badge = document.getElementById('perfil-ativo-badge'); 
-        badge.innerHTML = `<i class="fas fa-info-circle me-1"></i> Perfil: Nenhum`; 
-        badge.classList.remove('active');
     }
 
     // --- COMUNICAÇÃO SERIAL (MONITOR) ---
@@ -1016,7 +852,7 @@
         const btn = document.getElementById('btn-monitor');
         
         if (!monitorConnected) { 
-            if (!porta) return; 
+            if (!porta) return alert("Selecione uma porta primeiro."); 
             socket.emit('iniciar_monitor', { porta, baud }); 
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Ligar...'; 
         } else { 
@@ -1038,7 +874,6 @@
             btn.className = 'btn btn-sm btn-outline-info fw-bold'; 
             consola.innerHTML += `<div class='log-line' style='color: #f77;'>>> MONITOR DESLIGADO.</div>`; 
         }
-        
         consola.scrollTop = consola.scrollHeight;
     });
 
@@ -1049,33 +884,42 @@
             div.innerText = msg.data; 
             consola.appendChild(div); 
             
-            if (consola.childNodes.length > 500) {
-                consola.removeChild(consola.firstChild); 
-            }
+            if (consola.childNodes.length > 500) consola.removeChild(consola.firstChild); 
             consola.scrollTop = consola.scrollHeight; 
         } 
     });
 
     socket.on('dados_capturados', dados => { 
-        // Retira os dois pontos (:) do MAC E passa para minúsculas na escuta em direto
         if (dados.mac) {
             document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); 
         }
-        
-        if (dados.imei) {
-            document.getElementById('input-imei').value = dados.imei; 
-        }
-        
-        if (dados.cimi) {
-            document.getElementById('input-cimi').value = dados.cimi; 
-        }
-        
+        if (dados.imei) document.getElementById('input-imei').value = dados.imei; 
+        if (dados.cimi) document.getElementById('input-cimi').value = dados.cimi; 
         if (dados.serial && !document.getElementById('input-sn').value) {
             document.getElementById('input-sn').value = dados.serial;
         }
     });
 
-    // --- COMUNICAÇÃO SERIAL (FLASH DO CHIP) ---
+    // --- COMUNICAÇÃO SERIAL (FLASH) ---
+    async function carregarPortas() {
+        try { 
+            const res = await fetch('/listar_portas'); 
+            const dados = await res.json(); 
+            const sel = document.getElementById('selectPorta'); 
+            const atual = sel.value; 
+            
+            sel.innerHTML = ""; 
+            dados.forEach(p => {
+                let nome = p.device + " | " + p.description;
+                if (p.description.match(/CP210|CH340|Serial|USB/i)) {
+                    nome = "⭐ " + nome;
+                }
+                sel.add(new Option(nome, p.device));
+            }); 
+            if (atual) sel.value = atual; 
+        } catch(e) {}
+    }
+
     function iniciar(modo) {
         if (monitorConnected) toggleMonitor(); 
         if (activeTab !== 'install') switchConsole('install');
@@ -1083,22 +927,16 @@
         const porta = document.getElementById('selectPorta').value;
         const ficheiro = document.getElementById('selectFicheiro').value;
         const baud = document.getElementById('selectBaud').value;
-        const btn = document.getElementById('btn-instalar');
         
         if (!porta) return alert("Porta obrigatória!"); 
-        if (modo === 'flash_limpo' && !ficheiro) return alert("Ficheiro obrigatório!");
+        if (modo === 'flash_limpo' && !ficheiro) return alert("Tem de selecionar um ficheiro Firmware!");
         
-        btn.disabled = true; 
         document.getElementById('status-text').innerText = "A PROCESSAR..."; 
         document.getElementById('status-text').className = "text-warning fw-bold"; 
         document.getElementById('barra').style.width = "5%"; 
         document.getElementById('barra').className = "progress-bar progress-bar-striped progress-bar-animated bg-info";
         
-        // Limpar todas as caixas de texto antes do flash
-        ['input-mac', 'input-sn', 'input-imei', 'input-cimi'].forEach(id => { 
-            document.getElementById(id).value = ""; 
-        });
-        
+        limparCamposLeitura();
         socket.emit('iniciar_processo', { porta, baud, ficheiro, modo });
     }
 
@@ -1117,178 +955,594 @@
             consola.appendChild(div); 
             consola.scrollTop = consola.scrollHeight;
             
-            if (cleanData.includes("Writing")) {
-                document.getElementById('barra').style.width = "60%";
-            }
+            if (cleanData.includes("Writing")) document.getElementById('barra').style.width = "60%";
+            if (cleanData.includes("Verifying")) document.getElementById('barra').style.width = "85%";
         }
     });
 
+
+    // ==========================================
+    //   ORQUESTRAÇÃO DO FLUXO AUTOMÁTICO (MES)
+    // ==========================================
+    
+    function iniciarAutomacaoMES() {
+        const ficheiro = document.getElementById('selectFicheiro').value;
+        const porta = document.getElementById('selectPorta').value;
+        
+        if (!porta) return alert("Selecione uma porta COM!");
+        if (!ficheiro && !perfilAtivo) return alert("Selecione um ficheiro ou ative um perfil!");
+        
+        const etiquetaUsar = perfilAtivo ? perfilAtivo.zpl : etiquetaAtiva;
+        if (!etiquetaUsar || etiquetaUsar === "") {
+            alert("ATENÇÃO: Não tem nenhuma Etiqueta ZPL selecionada! Vá ao Módulo ZPL ativar uma, ou ative um perfil que tenha etiqueta configurada.");
+            return;
+        }
+
+        isAutoModeRunning = true;
+        
+        document.getElementById('btn-automacao').innerHTML = '<i class="fas fa-spinner fa-spin fa-lg me-2"></i> A PROCESSAR...';
+        document.getElementById('btn-automacao').disabled = true;
+
+        consola.innerHTML += `<div class='log-line log-warning'>>> A INICIAR AUTOMAÇÃO DE PRODUÇÃO TUDO-EM-1...</div>`;
+        iniciar('flash_limpo'); 
+    }
+
     socket.on('fim_processo', () => { 
-        document.getElementById('btn-instalar').disabled = false; 
         document.getElementById('barra').style.width = "100%"; 
         document.getElementById('barra').className = "progress-bar bg-success"; 
         document.getElementById('status-text').innerText = "Concluído"; 
         document.getElementById('status-text').className = "text-success fw-bold"; 
-        consola.innerHTML += "<div class='log-line text-success fw-bold' style='margin-top: 10px;'>>> PROCESSO CONCLUÍDO!</div>"; 
+        consola.innerHTML += "<div class='log-line text-success fw-bold' style='margin-top: 10px;'>>> PROCESSO FLASH CONCLUÍDO!</div>"; 
         consola.scrollTop = consola.scrollHeight; 
+
+        if (isAutoModeRunning) {
+            modalResetObj.show();
+        }
     });
 
-    // --- FUNÇÕES EXTRA DE BOTÕES MANUAIS ---
-    async function capturarDados() { 
-        if (!monitorConnected) return; 
-        const res = await fetch('/analisar_buffer', {method: 'POST'}); 
-        const dados = await res.json(); 
+    function confirmarResetFeito() {
+        modalResetObj.hide();
+        consola.innerHTML += `<div class='log-line text-warning'>>> A LIGAR MONITOR SERIAL. AGUARDE PELOS DADOS...</div>`;
         
-        // Retira os dois pontos (:) do MAC E passa para minúsculas
-        if (dados.mac) {
-            document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); 
+        if (!monitorConnected) toggleMonitor(); 
+        
+        // Transforma o botão "TUDO EM 1" num botão de "CONFIRMAR" para o utilizador decidir quando parar
+        const btn = document.getElementById('btn-automacao');
+        btn.disabled = false;
+        btn.className = "btn btn-success w-100 py-3 mb-4 fw-bold pulse-animation";
+        btn.innerHTML = `<i class="fas fa-check-double fa-lg me-2"></i> VALIDAR DADOS LIDOS<br><span class="small" style="font-weight: 600;">Clique quando tiver os dados todos</span>`;
+        btn.onclick = dadosEncontradosAvançar;
+        
+        // Removemos o timer automático para a aplicação ficar a ler continuamente até o utilizador confirmar!
+        clearInterval(checkDataInterval);
+        clearTimeout(autoTimeout);
+    }
+
+    function dadosEncontradosAvançar() {
+        // Proteção extra: se o utilizador clicar antes de aparecer um MAC, o sistema avisa
+        let inMac = document.getElementById('input-mac').value;
+        if (!inMac || inMac.length < 5) {
+            if(!confirm("Aviso: Ainda não foi lido nenhum MAC Address! Tem a certeza que quer avançar para a impressão?")) {
+                return; // Se o utilizador cancelar, a consola continua a ler
+            }
         }
+
+        if (monitorConnected) toggleMonitor(); // Desliga o serial para poupar recursos
         
-        if (dados.imei) {
-            document.getElementById('input-imei').value = dados.imei; 
-        }
+        document.getElementById('mod-mac').value = document.getElementById('input-mac').value;
+        document.getElementById('mod-imei').value = document.getElementById('input-imei').value;
+        document.getElementById('mod-cimi').value = document.getElementById('input-cimi').value;
         
-        if (dados.cimi) {
-            document.getElementById('input-cimi').value = dados.cimi; 
-        }
+        let painelSN = document.getElementById('input-sn').value;
+        if (!painelSN) painelSN = Math.floor(Math.random() * 9000000000) + 1000000000;
+        document.getElementById('mod-sn').value = painelSN;
         
-        if (!document.getElementById('input-sn').value && dados.sn) {
-            document.getElementById('input-sn').value = dados.sn;
+        document.getElementById('mod-qtd').value = 1;
+        modalConfirmObj.show();
+    }
+
+    function cancelarAutomacao() {
+        isAutoModeRunning = false;
+        limparCamposLeitura();
+        resetBotaoAutomacao();
+    }
+
+    function resetBotaoAutomacao() {
+        const btn = document.getElementById('btn-automacao');
+        btn.disabled = false;
+        btn.className = "btn btn-mega w-100 py-3 mb-4 fw-bold";
+        btn.innerHTML = `<i class="fas fa-bolt fa-lg me-2"></i> TUDO EM 1<br><span class="small" style="font-weight: 600;">Flash + Lê Logs + ZPL + CSV</span>`;
+        btn.onclick = iniciarAutomacaoMES; // Volta a colocar a ação original "Tudo em 1"
+    }
+
+    async function concluirFluxoAutomatico() {
+        modalConfirmObj.hide();
+        isAutoModeRunning = false;
+        
+        const payload = {
+            mac: document.getElementById('mod-mac').value,
+            sn: document.getElementById('mod-sn').value,
+            imei: document.getElementById('mod-imei').value,
+            cimi: document.getElementById('mod-cimi').value,
+            perfil: perfilAtivo ? perfilAtivo.nome : "Manual"
+        };
+        
+        const quantidadeRequerida = document.getElementById('mod-qtd').value;
+        const etiquetaUsar = perfilAtivo ? perfilAtivo.zpl : etiquetaAtiva;
+
+        try {
+            await fetch('/guardar_csv_manual', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
+            
+            // FORÇA A ATUALIZAÇÃO DO CSV EM SEGUNDO PLANO
+            carregarLogsDoCSV();
+            
+            await enviarParaMotorZPL(payload.mac, payload.sn, payload.imei, payload.cimi, etiquetaUsar, quantidadeRequerida);
+            
+            consola.innerHTML += `<div class='log-line text-success fw-bold'>>> CICLO MES COMPLETADO COM SUCESSO!</div>`;
+        } catch(e) { 
+            alert("Erro Fatal durante gravação/impressão: " + e.message); 
+        } finally {
+            resetBotaoAutomacao();
+            consola.scrollTop = consola.scrollHeight;
         }
     }
 
-    async function guardarECsv() { 
-        const dados = { 
-            mac: document.getElementById('input-mac').value, 
-            imei: document.getElementById('input-imei').value, 
-            sn: document.getElementById('input-sn').value, 
-            cimi: document.getElementById('input-cimi').value 
-        }; 
-        await fetch('/guardar_csv_manual', { 
+
+    // --- MOTOR ZPL ---
+    async function enviarParaMotorZPL(mac, sn, imei, cimi, label_file, qtd) {
+        const ip = document.getElementById('ip-impressora').value.trim();
+        
+        const resposta = await fetch('/api/processar_zpl_v6', { 
             method: 'POST', 
             headers: {'Content-Type': 'application/json'}, 
-            body: JSON.stringify(dados) 
-        }); 
-    }
-
-    function fecharAplicacao() { 
-        if (confirm("Encerrar aplicação?")) { 
-            fetch('/shutdown', { method: 'POST' }); 
-            document.body.innerHTML = "<div class='shutdown-screen'><div><i class='fas fa-power-off fa-4x mb-4' style='color:var(--danger)'></i><h2 class='fw-bold'>Encerrado</h2></div></div>"; 
-            setTimeout(() => window.close(), 3000); 
-        } 
-    }
-
-    async function carregarPortas() { 
-        try { 
-            const res = await fetch('/listar_portas'); 
-            const dados = await res.json(); 
-            const sel = document.getElementById('selectPorta'); 
-            const atual = sel.value; 
-            
-            sel.innerHTML = ""; 
-            dados.forEach(p => {
-                let nome = p.device + " | " + p.description;
-                if (p.description.match(/CP210|CH340|Serial|USB/i)) {
-                    nome = "⭐ " + nome;
-                }
-                sel.add(new Option(nome, p.device));
-            }); 
-            
-            if (atual) sel.value = atual; 
-        } catch(e) {} 
-    }
-
-    function limparEcra() { 
-        consola.innerHTML = ""; 
-        document.getElementById('barra').style.width = "0%"; 
-    }
-
-    // --- GESTÃO DE FICHEIROS .BIN ---
-    async function carregarArquivos(renderList = true) { 
-        const res = await fetch('/listar_ficheiros'); 
-        const files = await res.json(); 
-        const sel = document.getElementById('selectFicheiro'); 
+            body: JSON.stringify({ 
+                mac: mac, imei: imei, sn: sn, cimi: cimi, 
+                label_file: label_file, 
+                ip_impressora: ip,
+                quantidade: qtd
+            }) 
+        });
         
-        if (sel) { 
-            const atual = sel.value; 
-            sel.innerHTML = ""; 
-            files.forEach(f => sel.add(new Option(f, f))); 
-            if (atual) sel.value = atual; 
-        } 
+        const jsonZpl = await resposta.json();
+        
+        if (jsonZpl.sucesso) {
+            if (jsonZpl.impresso_direto) {
+                consola.innerHTML += `<div class='log-line log-success'>>> <i class="fas fa-print"></i> ENVIADAS ${qtd} ETIQUETAS (IP: ${ip})!</div>`;
+            } else {
+                const blob = new Blob([jsonZpl.zpl], {type:'text/plain'});
+                const a = document.createElement('a');
+                a.href = window.URL.createObjectURL(blob);
+                
+                const extensaoOriginal = label_file ? label_file.split('.').pop() : 'zpl';
+                a.download = `Etiquetas_${sn}_x${qtd}.${extensaoOriginal}`;
+                
+                a.click();
+                consola.innerHTML += `<div class='log-line log-success'>>> <i class="fas fa-download"></i> FICHEIRO .${extensaoOriginal.toUpperCase()} COM ${qtd} CÓPIAS DESCARREGADO!</div>`;
+            }
+        } else {
+            alert("ERRO NO MÓDULO ZPL: " + jsonZpl.erro);
+            consola.innerHTML += `<div class='log-line log-error'>>> ERRO IMPRESSORA: ${jsonZpl.erro}</div>`;
+        }
+    }
+
+    // --- MODO OFFLINE ---
+    async function analisarOffline() {
+        const input = document.getElementById('offline-file');
+        if (input.files.length === 0) return alert("Selecione um ficheiro de log .txt!");
+        
+        const fd = new FormData(); 
+        fd.append('file', input.files[0]);
+        
+        try {
+            const res = await fetch('/analisar_logs_ficheiro', { method: 'POST', body: fd });
+            if (!res.ok) throw new Error("A rota offline não foi encontrada.");
+            
+            const dados = await res.json();
+            if (dados.erro) return alert(dados.erro);
+            
+            document.getElementById('off-mac').value = dados.mac ? dados.mac.replace(/:/g, '').toLowerCase() : '';
+            document.getElementById('off-imei').value = dados.imei || '';
+            document.getElementById('off-cimi').value = dados.cimi || '';
+            
+            let currentOffSn = document.getElementById('off-sn').value;
+            if (!currentOffSn && dados.sn) document.getElementById('off-sn').value = dados.sn;
+            else if (!currentOffSn) document.getElementById('off-sn').value = Math.floor(Math.random() * 9000000000) + 1000000000;
+            
+            alert("Logs analisadas com sucesso! Confirme os dados abaixo.");
+        } catch(e) { alert("Erro de comunicação: " + e.message); }
+    }
+
+    async function processarOfflineCompleto(salvarNoHistorico) {
+        const mac = document.getElementById('off-mac').value;
+        const sn = document.getElementById('off-sn').value;
+        const imei = document.getElementById('off-imei').value;
+        const cimi = document.getElementById('off-cimi').value;
+        
+        if (!mac && !imei && !cimi) return alert("Não há dados extraídos para processar!");
+        
+        const etiquetaUsar = perfilAtivo ? perfilAtivo.zpl : etiquetaAtiva;
+        if (!etiquetaUsar) { 
+            showPanel('painel-etiquetas'); 
+            return alert("Precisa de ter um Modelo ZPL ativo para gerar a etiqueta!"); 
+        }
+        
+        try {
+            if(salvarNoHistorico) {
+                await fetch('/guardar_csv_manual', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ mac, imei, sn, cimi, perfil: 'Processamento Offline' }) 
+                });
+                carregarLogsDoCSV(); // FORÇA A ATUALIZAÇÃO DA TABELA AQUI TAMBÉM
+                await enviarParaMotorZPL(mac, sn, imei, cimi, etiquetaUsar, 1);
+                alert("Etiqueta Processada e Guardada no Histórico!");
+            } else {
+                await enviarParaMotorZPL(mac, sn, imei, cimi, etiquetaUsar, 1);
+            }
+        } catch(e) { alert("Erro ao processar o ZPL."); }
+    }
+
+
+    // --- FUNÇÕES DE GESTÃO DE FICHEIROS E ETIQUETAS ---
+    async function carregarArquivos(renderList = true) { 
+        // Adicionado cache-busting para garantir as listas mais recentes
+        const resB = await fetch('/listar_ficheiros?t=' + new Date().getTime()); 
+        const bins = await resB.json(); 
+        
+        const selMain = document.getElementById('selectFicheiro');
+        const selPerfil = document.getElementById('p-file');
+        
+        if(selMain) { const atual = selMain.value; selMain.innerHTML = ""; bins.forEach(f => selMain.add(new Option(f, f))); if(atual) selMain.value = atual; }
+        if(selPerfil) { selPerfil.innerHTML = ""; bins.forEach(f => selPerfil.add(new Option(f, f))); }
         
         if (renderList) { 
             const lista = document.getElementById('listaFiles'); 
             lista.innerHTML = ""; 
-            
-            if (files.length === 0) return; 
-            
-            files.forEach(f => { 
-                lista.innerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-file-code me-2 text-primary"></i>${f}</span>
-                        <button class="btn btn-sm btn-outline-danger" onclick="apagar('${f}')"><i class="fas fa-trash"></i></button>
-                    </li>`; 
-            }); 
+            if (bins.length > 0) {
+                bins.forEach(f => { 
+                    lista.innerHTML += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-file-code me-2 text-primary"></i>${f}</span>
+                            <button class="btn btn-sm btn-outline-danger admin-only" onclick="apagarArquivo('${f}', 'bin')"><i class="fas fa-trash"></i></button>
+                        </li>`; 
+                }); 
+            }
         } 
     }
 
-    async function upload() { 
-        const input = document.getElementById('upFile'); 
+    async function carregarEtiquetas() {
+        const resZ = await fetch('/listar_etiquetas?t=' + new Date().getTime()); 
+        const zpls = await resZ.json();
+        
+        const selZpl = document.getElementById('p-zpl');
+        if(selZpl) { 
+            selZpl.innerHTML = "<option value=''>Nenhuma (Fica Vazio)</option>"; 
+            zpls.forEach(f => selZpl.add(new Option(f, f))); 
+        }
+
+        const lista = document.getElementById('listaEtiquetas'); 
+        lista.innerHTML = "";
+        
+        if (zpls.length === 0) { 
+            lista.innerHTML = "<li class='list-group-item text-muted'>Nenhum ficheiro carregado.</li>"; 
+            atualizarBadges(); return; 
+        }
+        
+        zpls.forEach(f => {
+            const isAtiva = (f === etiquetaAtiva);
+            lista.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center ${isAtiva ? 'bg-light' : ''}" style="border-left: ${isAtiva ? '4px solid var(--accent)' : '1px solid #ddd'};">
+                    <span><i class="fas fa-tag me-2 ${isAtiva ? 'text-primary' : 'text-muted'}"></i><strong class="${isAtiva ? 'text-primary' : ''}">${f}</strong>${isAtiva ? '<span class="badge bg-primary ms-2">ATIVO</span>' : ''}</span>
+                    <div>
+                        <button class="btn btn-sm ${isAtiva ? 'btn-success' : 'btn-outline-primary'} me-2 fw-bold" onclick="ativarEtiquetaManual('${f}')">${isAtiva ? '<i class="fas fa-check"></i>' : 'Usar'}</button>
+                        <button class="btn btn-sm btn-outline-danger admin-only" onclick="apagarArquivo('${f}', 'zpl')"><i class="fas fa-trash"></i></button>
+                    </div>
+                </li>`;
+        });
+        atualizarBadges();
+    }
+
+    async function uploadArquivo(inputId, urlRota) { 
+        const input = document.getElementById(inputId); 
         if (input.files.length === 0) return; 
         
         const fd = new FormData(); 
         fd.append('file', input.files[0]); 
         
-        await fetch('/upload', { method: 'POST', body: fd }); 
-        
-        input.value = ""; 
-        carregarArquivos(); 
-    }
-
-    async function apagar(f) { 
-        if (confirm("Apagar " + f + "?")) { 
-            await fetch('/delete_file', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({filename: f}) 
-            }); 
-            carregarArquivos(); 
+        const res = await fetch(urlRota, { method: 'POST', body: fd }); 
+        if (res.ok) { 
+            input.value = ""; 
+            if(urlRota.includes('etiqueta')) carregarEtiquetas(); else carregarArquivos();
         } 
     }
 
-    // --- DADOS DA TABELA CSV ---
-    async function carregarLogs() { 
-        const res = await fetch('/api/logs'); 
-        const logs = await res.json(); 
-        const tbody = document.getElementById('table-logs-body'); 
+    async function apagarArquivo(nome, tipo) { 
+        if (!confirm(`Deseja apagar o ficheiro "${nome}" permanentemente?`)) return;
         
-        if (logs.length === 0) { 
-            tbody.innerHTML = "<tr><td colspan='6' class='text-center text-muted'>Vazio</td></tr>"; 
+        const rota = tipo === 'zpl' ? '/delete_etiqueta' : '/delete_file';
+        
+        await fetch(rota, { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify({filename: nome}) 
+        }); 
+        
+        if (tipo === 'zpl') {
+            if (etiquetaAtiva === nome) { etiquetaAtiva = null; localStorage.removeItem('etiquetaAtiva'); } 
+            carregarEtiquetas();
+        } else {
+            carregarArquivos();
+        }
+    }
+
+    // --- GESTÃO DE PERFIS ---
+    async function carregarDadosPerfis() {
+        await carregarArquivos(false);
+        await carregarEtiquetas(); 
+        
+        const res = await fetch('/api/perfis?t=' + new Date().getTime()); 
+        perfisList = await res.json();
+        
+        const container = document.getElementById('grid-perfis');
+        container.innerHTML = "";
+        
+        if (perfisList.length === 0) { 
+            container.innerHTML = "<div class='col-12'><p class='text-muted'>Nenhum perfil de Hardware criado na base de dados.</p></div>"; 
+            return; 
+        }
+        
+        perfisList.forEach(p => {
+            let btns = `<button class="btn btn-sm btn-primary fw-bold" onclick='ativarPerfil(${JSON.stringify(p)})'><i class="fas fa-check me-1"></i> Usar</button>`;
+            
+            if(p.pdf && p.pdf !== "") {
+                btns += `<a class="btn btn-sm btn-info fw-bold ms-2" href="/download_pdf/${p.pdf}" target="_blank"><i class="fas fa-file-pdf text-danger"></i> Manual</a>`;
+            }
+            
+            let btnDelete = isAdmin ? `<button class="btn btn-sm btn-outline-danger ms-auto" onclick="apagarPerfil(${p.id})"><i class="fas fa-trash"></i></button>` : '';
+
+            container.innerHTML += `
+                <div class="col-md-4 mb-4">
+                    <div class="custom-card h-100 mb-0 d-flex flex-column">
+                        <h5 class="fw-bold text-primary border-bottom pb-2">${p.nome}</h5>
+                        <div class="small text-muted mb-3 flex-grow-1">
+                            <div class="mb-1"><i class="fas fa-microchip me-2 text-dark"></i>${p.file}</div>
+                            <div class="mb-1"><i class="fas fa-tachometer-alt me-2 text-dark"></i>${p.baud} Baud</div>
+                            <div class="mb-1"><i class="fas fa-tag me-2 text-dark"></i>${p.zpl || '<span class="text-danger">Sem ZPL Atribuída</span>'}</div>
+                        </div>
+                        <div class="d-flex align-items-center mt-auto pt-2 border-top">
+                            ${btns}
+                            ${btnDelete}
+                        </div>
+                    </div>
+                </div>`;
+        });
+    }
+
+    async function salvarPerfil() {
+        const nome = document.getElementById('p-nome').value;
+        const file = document.getElementById('p-file').value;
+        const baud = document.getElementById('p-baud').value;
+        const zpl = document.getElementById('p-zpl').value;
+        
+        const pdfInput = document.getElementById('p-pdf');
+        let pdfName = "";
+
+        if (!nome || !file) return alert("O Nome e o Firmware são obrigatórios para criar um perfil."); 
+
+        if(pdfInput.files.length > 0) {
+            const pdfFile = pdfInput.files[0];
+            const fd = new FormData(); 
+            fd.append('file', pdfFile);
+            
+            try {
+                const r = await fetch('/upload_pdf', {method:'POST', body:fd});
+                if(r.ok) {
+                    pdfName = pdfFile.name; 
+                } else {
+                    alert("Aviso: O ficheiro PDF não foi guardado. Verifique se o Backend suporta PDFs.");
+                }
+            } catch(e) {
+                console.error("Erro no PDF:", e);
+            }
+        }
+        
+        perfisList.push({ id: Date.now(), nome: nome, file: file, baud: baud, zpl: zpl, pdf: pdfName });
+        
+        await fetch('/api/perfis', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(perfisList) 
+        });
+        
+        document.getElementById('p-nome').value = ""; 
+        document.getElementById('p-pdf').value = "";
+        
+        carregarDadosPerfis();
+    }
+
+    async function apagarPerfil(id) { 
+        if (!confirm("Tem a certeza que deseja eliminar este Perfil da base de dados?")) return; 
+        
+        perfisList = perfisList.filter(p => p.id !== id); 
+        await fetch('/api/perfis', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'}, 
+            body: JSON.stringify(perfisList) 
+        }); 
+        
+        carregarDadosPerfis(); 
+        if(perfilAtivo && perfilAtivo.id === id) cancelarPerfil();
+    }
+    
+    function ativarPerfil(p) {
+        perfilAtivo = p;
+        document.getElementById('selectFicheiro').value = p.file; 
+        document.getElementById('selectBaud').value = p.baud;
+        document.getElementById('selectFicheiro').disabled = true; 
+        document.getElementById('selectBaud').disabled = true; 
+        
+        atualizarBadges();
+        showPanel('painel-flash');
+    }
+
+    function cancelarPerfil() {
+        if (!perfilAtivo) return; 
+        perfilAtivo = null;
+        document.getElementById('selectFicheiro').disabled = false; 
+        document.getElementById('selectBaud').disabled = false; 
+        atualizarBadges();
+    }
+
+    function ativarEtiquetaManual(nome) { 
+        if(perfilAtivo) {
+            alert("Tem um Perfil ativo! O ZPL tem de ser configurado dentro do Perfil. Se quiser usar manualmente, cancele o perfil no painel de Produção.");
+            return;
+        }
+        etiquetaAtiva = nome; 
+        localStorage.setItem('etiquetaAtiva', nome); 
+        carregarEtiquetas(); 
+    }
+
+    function atualizarBadges() {
+        const badgeLabelContainer = document.getElementById('label-ativo-badge');
+        const badgeLabelText = document.getElementById('label-name');
+        
+        let zplDisplay = "Nenhum";
+        if (perfilAtivo) {
+            zplDisplay = perfilAtivo.zpl || "Nenhum (Erro)";
+            badgeLabelContainer.classList.add('active');
+            badgeLabelText.className = "text-primary fw-bold";
+        } else if (etiquetaAtiva) {
+            zplDisplay = etiquetaAtiva;
+            badgeLabelContainer.classList.add('active');
+            badgeLabelText.className = "text-primary fw-bold";
+        } else {
+            badgeLabelContainer.classList.remove('active');
+            badgeLabelText.className = "text-danger";
+        }
+        badgeLabelText.innerText = zplDisplay;
+
+        const badgePerfilContainer = document.getElementById('perfil-ativo-badge');
+        const badgePerfilText = document.getElementById('perfil-name');
+        
+        if (perfilAtivo) {
+            badgePerfilContainer.classList.add('active');
+            badgePerfilText.innerHTML = `${perfilAtivo.nome} <span class='small text-muted ms-1'>(x Clicar)</span>`;
+        } else {
+            badgePerfilContainer.classList.remove('active');
+            badgePerfilText.innerText = "Modo Manual Livre";
+        }
+    }
+
+
+    // --- HISTÓRICO CSV ---
+    async function carregarLogsDoCSV() { 
+        try {
+            // O segredo está aqui: o ?t= impede o Google Chrome de usar a cache velha!
+            const res = await fetch('/api/logs?t=' + new Date().getTime()); 
+            logHistory = await res.json(); 
+            renderizarTabelaLogs();
+        } catch(e) {}
+    }
+
+    function renderizarTabelaLogs() {
+        const tbody = document.getElementById('table-logs-body'); 
+        if (logHistory.length === 0) { 
+            tbody.innerHTML = "<tr><td colspan='7' class='text-center text-muted py-4'>Sem registos de produção na base de dados.</td></tr>"; 
             return; 
         } 
         
-        tbody.innerHTML = logs.map(l => `
-            <tr>
-                <td>${l.Data}</td>
-                <td class="font-monospace fw-bold text-primary">${l.MAC}</td>
-                <td class="font-monospace">${l.Serial || '-'}</td>
-                <td class="font-monospace">${l.IMEI}</td>
-                <td class="text-danger fw-bold">${l.CIMI || '-'}</td>
-                <td>${l.Firmware}</td>
-            </tr>`).reverse().join(''); 
+        const dataF = document.getElementById('filtro-data').value;
+        const perfF = document.getElementById('filtro-perfil').value.toLowerCase();
+        const fwF = document.getElementById('filtro-fw').value.toLowerCase();
+        
+        tbody.innerHTML = "";
+        let renderizados = 0;
+        
+        logHistory.forEach((l, originalIndex) => {
+            if(dataF && !l.Data.includes(dataF)) return;
+            let nomePerfil = l.Perfil || "N/A";
+            if(perfF && !nomePerfil.toLowerCase().includes(perfF)) return;
+            if(fwF && !l.Firmware.toLowerCase().includes(fwF)) return;
+            
+            renderizados++;
+            let btnApagar = `<button class="btn btn-sm btn-outline-danger" title="Apagar Rastreabilidade" onclick="apagarLinhaUnicaCSV(${originalIndex})"><i class="fas fa-trash"></i></button>`;
+            
+            tbody.innerHTML = `
+                <tr>
+                    <td>${l.Data}</td>
+                    <td class="font-monospace fw-bold text-primary">${l.MAC}</td>
+                    <td class="font-monospace">${l.Serial || '-'}</td>
+                    <td class="font-monospace">${l.IMEI}</td>
+                    <td class="text-danger fw-bold">${l.CIMI || '-'}</td>
+                    <td>
+                        <div><i class="fas fa-id-card text-muted me-1"></i> ${nomePerfil}</div>
+                        <div class="small text-muted"><i class="fas fa-file-code me-1"></i> ${l.Firmware}</div>
+                    </td>
+                    <td class="admin-only-cell">${btnApagar}</td>
+                </tr>` + tbody.innerHTML;
+        });
+
+        if (renderizados === 0) {
+            tbody.innerHTML = "<tr><td colspan='7' class='text-center text-muted py-4'>Nenhum registo encontrado com estes filtros.</td></tr>"; 
+        }
     }
 
-    // INICIALIZAÇÃO
-    function carregarDados() { 
-        carregarPortas(); 
-        carregarArquivos(false); 
-        atualizarLabelBadge(); 
+    async function apagarTudoCSV() { 
+        if (confirm("PERIGO: Deseja destruir TODO o ficheiro CSV do histórico de aparelhos?")) { 
+            await fetch('/api/delete_csv', { method: 'POST' }); 
+            carregarLogsDoCSV(); 
+        } 
     }
-    
-    // Iniciar a aplicação
-    carregarDados();
-    
+
+    async function apagarLinhaUnicaCSV(indexOriginal) {
+        if(confirm("Confirma que pretende apagar o registo de rastreabilidade desta placa individual?")) {
+            await fetch('/api/delete_csv_row', { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({ index: indexOriginal }) 
+            }); 
+            carregarLogsDoCSV(); 
+        }
+    }
+
+    // Leitura manual pura
+    async function forcarLeituraVisual() { 
+        if (!monitorConnected) return alert("Ligue o Monitor Serial Primeiro!");
+        const res = await fetch('/analisar_buffer', {method: 'POST'}); 
+        const dados = await res.json(); 
+        
+        if (dados.mac) document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); 
+        if (dados.imei) document.getElementById('input-imei').value = dados.imei; 
+        if (dados.cimi) document.getElementById('input-cimi').value = dados.cimi; 
+        if (!document.getElementById('input-sn').value && dados.sn) document.getElementById('input-sn').value = dados.sn;
+    }
+
+    // --- ENCERRAMENTO ---
+    function fecharAplicacao() { 
+        if (confirm("Deseja desligar os serviços e fechar a aplicação?")) { 
+            fetch('/shutdown', { method: 'POST' }); 
+            document.body.innerHTML = `
+                <div class='shutdown-screen'>
+                    <div><i class='fas fa-power-off fa-4x mb-4' style='color:var(--danger)'></i></div>
+                    <h2 class='fw-bold'>Sistema Encerrado</h2>
+                    <p class='text-muted mt-2'>Pode fechar a janela do navegador em segurança.</p>
+                </div>`; 
+            setTimeout(() => window.close(), 3000); 
+        } 
+    }
+
+    // --- ARRANQUE DO DOM ---
+    carregarPortas(); 
+    carregarArquivos(false); 
+    carregarEtiquetas();
+    carregarDadosPerfis();
+    atualizarBadges();
+
 </script>
 </body>
 </html>

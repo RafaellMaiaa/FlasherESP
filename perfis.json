@@ -1,1 +1,1 @@
-[]
+[{"baud": "115200", "file": "mock data.bin", "id": 1772127045378, "nome": "teste -1", "pdf": "Especifica\u00e7\u00e3o T\u00e9cnica v5.0.pdf", "zpl": "test sn e mac sem espa\u00e7o.prn"}, {"id": 1772127619484, "nome": "teste -1 maxspeed", "file": "mock data.bin", "baud": "921600", "zpl": "test sn e mac sem espa\u00e7o.prn", "pdf": "Especifica\u00e7\u00e3o T\u00e9cnica v5.0.pdf"}]
