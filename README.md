@@ -16,7 +16,7 @@ A aplicação unifica gravação de firmware (Flash), monitorização serial par
 
 ### 🛡️ Gestão e Controlo de Qualidade
 
--   **Modo Administrador Restrito:** (Senha: `admin123`) Acesso exclusivo para criar regras de produção e gerir o histórico.
+-   **Modo Administrador Restrito:** Acesso exclusivo para criar regras de produção e gerir o histórico.
 
     
 -   **Rastreabilidade Segura:** Registo imutável de Data, MAC, SN, IMEI, CIMI e Perfil utilizado num ficheiro CSV filtrável.
