@@ -136,14 +136,28 @@ function tentarLoginAdmin() {
     if (pwdInput === "admin123") {
         isAdmin = true;
         document.body.classList.add('is-admin');
+        document.getElementById('admin-login-section').style.display = 'none';
+        document.getElementById('admin-logout-section').style.display = 'block';
         showToast("Modo Administrador Desbloqueado!", "success");
         document.getElementById('admin-pwd').value = "";
         carregarDadosPerfis();
         carregarLogsDoCSV();
+        showPanel('painel-perfis'); 
     } else {
         showToast("Senha incorreta.", "error");
     }
 }
+
+function sairAdmin() {
+    isAdmin = false;
+    document.body.classList.remove('is-admin');
+    document.getElementById('admin-login-section').style.display = 'block';
+    document.getElementById('admin-logout-section').style.display = 'none';
+    showToast("Sessão de Administrador Encerrada.", "warning");
+    carregarDadosPerfis(); 
+    showPanel('painel-flash'); 
+}
+
 
 // --- UTILIDADES ---
 function gerarNovoSN(campoId) {
@@ -254,22 +268,26 @@ socket.on('log_monitor', msg => {
 socket.on('dados_capturados', dados => { 
     let alterou = false;
     if (dados.mac && !document.getElementById('input-mac').value) {
-        document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); alterou = true;
+        document.getElementById('input-mac').value = dados.mac.replace(/:/g, '').toLowerCase(); 
+        showToast("✓ MAC Address Identificado!", "success");
+        alterou = true;
     }
     if (dados.imei && !document.getElementById('input-imei').value) {
-        document.getElementById('input-imei').value = dados.imei; alterou = true;
+        document.getElementById('input-imei').value = dados.imei; 
+        showToast("✓ IMEI GSM Extraído!", "success");
+        alterou = true;
     }
     if (dados.cimi && !document.getElementById('input-cimi').value) {
-        document.getElementById('input-cimi').value = dados.cimi; alterou = true;
+        document.getElementById('input-cimi').value = dados.cimi; 
+        showToast("✓ CIMI Identificado!", "success");
+        alterou = true;
     }
     if (dados.serial && !document.getElementById('input-sn').value) {
-        document.getElementById('input-sn').value = dados.serial; alterou = true;
+        document.getElementById('input-sn').value = dados.serial; 
+        alterou = true;
     }
     
-    if(alterou) {
-        checkInputVisuals();
-        showToast("Identificadores capturados!", "success");
-    }
+    if(alterou) checkInputVisuals();
 });
 
 socket.on('log_flash', msg => {

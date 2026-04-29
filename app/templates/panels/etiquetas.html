@@ -2,7 +2,8 @@
     <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Módulo ZPL (Impressão)</h2>
     <div class="row">
         <div class="col-md-5">
-            <div class="custom-card mb-4 animate-stagger delay-2" style="border-left: 5px solid var(--accent);">
+            <!-- Removido o inline style da borda lateral -->
+            <div class="custom-card mb-4 animate-stagger delay-2">
                 <h5 class="mb-3 text-muted">Carregar Novo Modelo Livre</h5>
                 <div class="input-group mb-2"><input type="file" id="upEtiqueta" class="form-control" accept=".zpl,.txt,.prn,.lbl,.nlbl"><button class="btn btn-outline-info" onclick="uploadArquivo('upEtiqueta', '/upload_etiqueta')"><i class="fas fa-upload me-2"></i> Subir</button></div>
                 <small class="text-muted d-block mt-2">Guarde no ZebraDesigner usando <b>Imprimir para ficheiro</b>.</small>
