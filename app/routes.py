@@ -83,13 +83,18 @@ def listar_portas():
 @main_routes.route('/api/perfis', methods=['GET', 'POST'])
 def perfis_api():
     if request.method == 'POST':
-        with open(current_app.config['PERFIS_FILE'], 'w') as f:
+        with open(current_app.config['PERFIS_FILE'], 'w', encoding='utf-8') as f:
             json.dump(request.json, f)
         return jsonify(sucesso=True)
     else:
-        if os.path.exists(current_app.config['PERFIS_FILE']):
-            with open(current_app.config['PERFIS_FILE'], 'r') as f:
-                return jsonify(json.load(f))
+        # VERIFICAÇÃO DE SEGURANÇA: Só tenta ler se o ficheiro existir E não estiver vazio
+        if os.path.exists(current_app.config['PERFIS_FILE']) and os.path.getsize(current_app.config['PERFIS_FILE']) > 0:
+            try:
+                with open(current_app.config['PERFIS_FILE'], 'r', encoding='utf-8') as f:
+                    return jsonify(json.load(f))
+            except json.JSONDecodeError:
+                # Se o JSON estiver corrompido, devolve lista vazia em vez de crashar
+                return jsonify([])
         return jsonify([])
 
 @main_routes.route('/guardar_csv_manual', methods=['POST'])
