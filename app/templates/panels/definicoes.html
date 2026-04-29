@@ -1,0 +1,23 @@
+<div id="painel-definicoes" class="panel">
+    <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Definições do Sistema</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="custom-card animate-stagger delay-2">
+                <h5 class="fw-bold text-primary mb-3"><i class="fas fa-network-wired me-2"></i> Impressora de Rede</h5>
+                <label class="fw-bold small text-muted mb-1">IP DA ZEBRA (Porta 9100 RAW)</label>
+                <input type="text" id="ip-impressora" class="form-control mb-3" placeholder="Ex: 192.168.1.50">
+                <p class="small text-muted mb-0"><i class="fas fa-info-circle me-1"></i> Se este campo estiver vazio, o sistema irá apenas fazer o <b>download</b> do ficheiro ZPL gerado para o computador.</p>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="custom-card animate-stagger delay-3" style="border-top-color: var(--danger);">
+                <h5 class="fw-bold text-danger mb-3"><i class="fas fa-user-shield me-2"></i> Acesso Administrador</h5>
+                <p class="small text-muted mb-3">O modo Administrador permite a criação de Perfis de Hardware, anexação de Manuais PDF e a capacidade de apagar o Histórico de Produção.</p>
+                <div class="input-group">
+                    <input type="password" id="admin-pwd" class="form-control" placeholder="Introduza a senha de acesso...">
+                    <button class="btn btn-danger fw-bold" onclick="tentarLoginAdmin()"><i class="fas fa-unlock me-1"></i> Desbloquear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,21 @@
+<div id="painel-logs" class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-4 animate-stagger delay-1">
+        <h2 style="margin:0; color: var(--text-main); font-weight: 700;">Histórico de Produção</h2>
+        <div>
+            <button onclick="window.location.href='/api/export_csv?t=' + new Date().getTime()" class="btn btn-success fw-bold shadow-sm me-2"><i class="fas fa-file-excel me-2"></i> Descarregar CSV</button>
+            <button onclick="apagarTudoCSV()" class="btn btn-outline-danger fw-bold shadow-sm admin-only" style="display: inline-block;"><i class="fas fa-trash-alt me-2"></i> Limpar Registo (Admin)</button>
+        </div>
+    </div>
+    
+    <div class="custom-card mb-3 py-3 animate-stagger delay-2">
+        <div class="row g-3">
+            <div class="col-md-4"><label class="small fw-bold text-muted">Filtrar por Data</label><input type="date" id="filtro-data" class="form-control" onchange="renderizarTabelaLogs()"></div>
+            <div class="col-md-4"><label class="small fw-bold text-muted">Filtrar por Perfil</label><input type="text" id="filtro-perfil" class="form-control" placeholder="Escreva o nome do perfil..." onkeyup="renderizarTabelaLogs()"></div>
+            <div class="col-md-4"><label class="small fw-bold text-muted">Filtrar por Firmware</label><input type="text" id="filtro-fw" class="form-control" placeholder="Escreva o nome do bin..." onkeyup="renderizarTabelaLogs()"></div>
+        </div>
+    </div>
+
+    <div class="custom-card p-0 overflow-hidden animate-stagger delay-3">
+        <div class="table-responsive"><table class="table mb-0 table-hover table-logs"><thead class="table-dark"><tr><th>Data/Hora</th><th>MAC Address</th><th>SN</th><th>IMEI</th><th>CIMI</th><th>Perfil / Firmware</th><th class="admin-only-cell">Ações</th></tr></thead><tbody id="table-logs-body"></tbody></table></div>
+    </div>
+</div>
