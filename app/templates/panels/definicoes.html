@@ -12,11 +12,28 @@
         <div class="col-md-6">
             <div class="custom-card animate-stagger delay-3" style="border-top-color: var(--danger);">
                 <h5 class="fw-bold text-danger mb-3"><i class="fas fa-user-shield me-2"></i> Acesso Administrador</h5>
-                <p class="small text-muted mb-3">O modo Administrador permite a criação de Perfis de Hardware, anexação de Manuais PDF e a capacidade de apagar o Histórico de Produção.</p>
-                <div class="input-group">
-                    <input type="password" id="admin-pwd" class="form-control" placeholder="Introduza a senha de acesso...">
-                    <button class="btn btn-danger fw-bold" onclick="tentarLoginAdmin()"><i class="fas fa-unlock me-1"></i> Desbloquear</button>
+                
+                <!-- Secção de Login -->
+                <div id="admin-login-section">
+                    <p class="small text-muted mb-3">O modo Administrador permite a criação de Perfis de Hardware, anexação de Manuais PDF e a capacidade de apagar o Histórico.</p>
+                    <div class="input-group">
+                        <input type="password" id="admin-pwd" class="form-control" placeholder="Introduza a senha de acesso...">
+                        <button class="btn btn-danger fw-bold" onclick="tentarLoginAdmin()"><i class="fas fa-unlock me-1"></i> Desbloquear</button>
+                    </div>
                 </div>
+
+                <!-- Secção Logged In (Oculta por padrão) -->
+                <div id="admin-logout-section" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center mb-0" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: var(--success);">
+                        <i class="fas fa-user-shield fa-2x me-3"></i>
+                        <div>
+                            <strong>Sessão Ativa</strong><br>
+                            <span class="small">Sistema totalmente desbloqueado.</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger ms-auto fw-bold" onclick="sairAdmin()"><i class="fas fa-lock me-1"></i> Bloquear</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>

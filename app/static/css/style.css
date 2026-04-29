@@ -103,3 +103,16 @@ body.is-admin .admin-only { display: block !important; }
 body.is-admin .sidebar.expanded .admin-badge { display: inline-block !important; }
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 .pulse-animation { animation: pulse 2s infinite; }
+
+/* =========================================
+   SCROLLBARS PERSONALIZADAS E VISÍVEIS
+   ========================================= */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Scrollbar específica para a Consola */
+.console-output::-webkit-scrollbar-track { background: var(--console-bg); }
+.console-output::-webkit-scrollbar-thumb { background: #334155; }
+.console-output::-webkit-scrollbar-thumb:hover { background: var(--accent); }
