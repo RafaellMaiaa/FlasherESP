@@ -1,0 +1,20 @@
+<div id="painel-perfis" class="panel">
+    <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Perfis de Hardware & Manuais</h2>
+    
+    <!-- Corrigida a cor amarela ofuscante para um fundo escuro com borda laranja/amarela -->
+    <div class="custom-card admin-only mb-4 animate-stagger delay-2" style="background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.3); border-top: 4px solid var(--warning);">
+        <h5 class="mb-3 text-warning fw-bold"><i class="fas fa-lock me-2"></i>Área Admin: Criar Perfil</h5>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3"><label class="small fw-bold text-muted">Nome do Perfil</label><input type="text" id="p-nome" class="form-control" placeholder="Ex: Placa V2"></div>
+            <div class="col-md-3"><label class="small fw-bold text-muted">Firmware (.bin)</label><select id="p-file" class="form-select"></select></div>
+            <div class="col-md-3"><label class="small fw-bold text-muted">Velocidade</label><select id="p-baud" class="form-select"><option value="115200">115200</option><option value="460800" selected>460800</option><option value="921600">921600</option></select></div>
+            <div class="col-md-3"><label class="small fw-bold text-muted">Molde ZPL</label><select id="p-zpl" class="form-select"></select></div>
+            <div class="col-md-8"><label class="small fw-bold text-muted">Manual (PDF Opcional)</label><input type="file" id="p-pdf" class="form-control" accept=".pdf"></div>
+            <div class="col-md-4"><button class="btn btn-warning w-100 fw-bold py-2" onclick="salvarPerfil()"><i class="fas fa-save me-1"></i> Gravar Perfil</button></div>
+        </div>
+    </div>
+
+    <div class="row animate-stagger delay-3" id="grid-perfis">
+        <!-- JS injeta os perfis aqui -->
+    </div>
+</div>

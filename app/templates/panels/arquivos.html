@@ -1,0 +1,17 @@
+<div id="painel-arquivos" class="panel">
+    <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Biblioteca de Firmwares</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="custom-card animate-stagger delay-2">
+                <h5 class="mb-3 text-muted">Adicionar Ficheiro (.bin)</h5>
+                <div class="input-group mb-4"><input type="file" id="upFile" class="form-control" accept=".bin"><button class="btn btn-outline-info" onclick="uploadArquivo('upFile', '/upload')"><i class="fas fa-upload"></i> Subir</button></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="custom-card animate-stagger delay-3">
+                <h5 class="mb-3 text-muted">Ficheiros Locais</h5>
+                <ul id="listaFiles" class="list-group list-group-flush" style="background: transparent;"></ul>
+            </div>
+        </div>
+    </div>
+</div>
