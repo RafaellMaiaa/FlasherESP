@@ -116,3 +116,83 @@ body.is-admin .sidebar.expanded .admin-badge { display: inline-block !important;
 .console-output::-webkit-scrollbar-track { background: var(--console-bg); }
 .console-output::-webkit-scrollbar-thumb { background: #334155; }
 .console-output::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* =========================================
+   CORREÇÕES VISUAIS (Listas, Dropdowns e Toggles)
+   ========================================= */
+/* Listas de Arquivos (Firmwares e ZPL) */
+.list-group-item { background-color: transparent !important; color: var(--text-main) !important; border-bottom: 1px solid rgba(255,255,255,0.05); padding-left: 10px; }
+.list-group-item span i { color: var(--accent) !important; }
+
+/* Dropdowns (.bin e baudrates) */
+select.form-select option { background-color: var(--bg-panel); color: var(--text-main); }
+select.form-select { color: var(--text-main) !important; font-weight: 500; }
+
+/* Toggles das Definições (Alinhamento perfeito) */
+.form-switch { display: flex; align-items: center; padding-left: 0; margin-bottom: 15px; }
+.form-switch .form-check-input { width: 45px; height: 24px; cursor: pointer; margin-left: 0 !important; margin-top: 0; flex-shrink: 0; }
+.form-switch .form-check-label { cursor: pointer; margin-left: 15px; margin-bottom: 0; font-size: 0.95rem; line-height: 1.4; }
+
+
+
+/* =========================================
+   FORÇAR LEGIBILIDADE (Listas e Dropdowns)
+   ========================================= */
+.list-group-item {
+    background-color: var(--bg-panel) !important;
+    color: #f8fafc !important;
+    border: 1px solid var(--border) !important;
+    margin-bottom: 5px;
+    border-radius: 8px !important;
+}
+.list-group-item strong, .list-group-item span {
+    color: #f8fafc !important;
+}
+.list-group-item i {
+    color: var(--accent) !important;
+}
+.form-select, .form-control {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+}
+.form-select option {
+    background-color: var(--bg-main) !important;
+    color: #f8fafc !important;
+}
+
+/* =========================================
+   FORÇAR LEGIBILIDADE (Listas e Dropdowns)
+   ========================================= */
+.list-group-item {
+    background-color: var(--bg-panel) !important;
+    color: #f8fafc !important;
+    border: 1px solid var(--border) !important;
+    margin-bottom: 5px;
+    border-radius: 8px !important;
+}
+.list-group-item strong, .list-group-item span {
+    color: #f8fafc !important;
+}
+.list-group-item i {
+    color: var(--accent) !important;
+}
+.form-select, .form-control {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: #f8fafc !important;
+}
+.form-select option {
+    background-color: var(--bg-main) !important;
+    color: #f8fafc !important;
+}
+
+/* Switches Customizados (Dark Mode Perfeito) */
+.form-switch .form-check-input:not(:checked) {
+    background-color: #334155 !important;
+    border-color: #475569 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%2394a3b8'/%3e%3c/svg%3e") !important;
+}
+.form-switch .form-check-input:checked {
+    background-color: var(--accent) !important;
+    border-color: var(--accent) !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+}

@@ -1,6 +1,7 @@
 <div id="painel-logs" class="panel">
     <div class="d-flex justify-content-between align-items-center mb-4 animate-stagger delay-1">
         <h2 style="margin:0; color: var(--text-main); font-weight: 700;">Histórico de Produção</h2>
+        <button class="btn btn-outline-info fw-bold shadow-sm btn-tutorial me-2" onclick="abrirModal('modalTutLogs')"><i class="fas fa-question-circle me-2"></i> Como Funciona?</button>
         <div>
             <button onclick="window.location.href='/api/export_csv?t=' + new Date().getTime()" class="btn btn-success fw-bold shadow-sm me-2"><i class="fas fa-file-excel me-2"></i> Descarregar CSV</button>
             <button onclick="apagarTudoCSV()" class="btn btn-outline-danger fw-bold shadow-sm admin-only" style="display: inline-block;"><i class="fas fa-trash-alt me-2"></i> Limpar Registo (Admin)</button>
@@ -17,5 +18,22 @@
 
     <div class="custom-card p-0 overflow-hidden animate-stagger delay-3">
         <div class="table-responsive"><table class="table mb-0 table-hover table-logs"><thead class="table-dark"><tr><th>Data/Hora</th><th>MAC Address</th><th>SN</th><th>IMEI</th><th>CIMI</th><th>Perfil / Firmware</th><th class="admin-only-cell">Ações</th></tr></thead><tbody id="table-logs-body"></tbody></table></div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalTutLogs" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="background: var(--bg-panel); border: 1px solid var(--border);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold text-info"><i class="fas fa-info-circle me-2"></i> Guia: Histórico</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-light">
+                <h6 class='fw-bold text-accent'>Filtrar Dados</h6><p class='small text-muted mb-3'>Utilize os campos no topo para filtrar a tabela por data, nome do perfil ou nome do ficheiro de firmware.</p><h6 class='fw-bold text-accent'>Exportar e Limpar</h6><p class='small text-muted'>O botão <strong>Exportar CSV</strong> descarrega a tabela atual num ficheiro de folha de cálculo. A limpeza total do registo requer permissões de Administrador.</p>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-info fw-bold w-100" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
     </div>
 </div>

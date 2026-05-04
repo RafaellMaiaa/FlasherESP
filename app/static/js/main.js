@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarEtiquetas();
     carregarDadosPerfis();
     atualizarBadges();
+    aplicarEstadoPreferencias();
 });
 
 // --- UI / UX (TOASTS E TEMPORIZADORES) ---
@@ -97,13 +98,21 @@ function showPanel(id) {
     
     const buttons = document.querySelectorAll('.nav-btn');
     if (buttons[navMap[id]]) buttons[navMap[id]].classList.add('active');
-    
     document.getElementById(id).classList.add('active');
     
     if (id === 'painel-flash') { carregarPortas(); carregarArquivos(); }
     else if (id === 'painel-arquivos') carregarArquivos();
     else if (id === 'painel-perfis') carregarDadosPerfis();
-    else if (id === 'painel-etiquetas') carregarEtiquetas();
+    else if (id === 'painel-etiquetas') {
+        carregarEtiquetas().then(() => {
+            const lista = document.getElementById('listaEtiquetas');
+            const tutAtivos = localStorage.getItem('tutoriaisAtivos') !== 'false';
+            // Se os tutoriais estão ligados e não há etiquetas, abre o modal
+            if (tutAtivos && (!lista || lista.children.length === 0 || lista.innerHTML.includes('Vazio.'))) {
+                abrirModal('modalTutorialZPL');
+            }
+        });
+    }
     else if (id === 'painel-logs') carregarLogsDoCSV();
 }
 
@@ -185,6 +194,8 @@ function gerarNovoSN(campoId) {
 }
 
 function limparCamposLeitura() {
+    window.beepTocado = false;
+    window.beepTocado = false;
     ['input-mac', 'input-sn', 'input-imei', 'input-cimi'].forEach(id => {
         let el = document.getElementById(id);
         if(el) {
@@ -307,7 +318,17 @@ socket.on('dados_capturados', dados => {
         alterou = true;
     }
     
-    if(alterou) checkInputVisuals();
+    if(alterou) {
+        checkInputVisuals();
+        const mm = document.getElementById('input-mac');
+        const ii = document.getElementById('input-imei');
+        const cc = document.getElementById('input-cimi');
+        // Se os 3 dados vitais estao preenchidos e o beep ainda nao tocou hoje
+        if (mm && ii && cc && mm.value.length > 5 && ii.value.length > 5 && cc.value.length > 5 && !window.beepTocado) {
+            if (typeof tocarSomSucesso === 'function') tocarSomSucesso();
+            window.beepTocado = true;
+        }
+    }
 });
 
 socket.on('log_flash', msg => {
@@ -550,7 +571,8 @@ async function carregarEtiquetas() {
     if(selZpl) { selZpl.innerHTML = "<option value=''>Nenhuma</option>"; zpls.forEach(f => selZpl.add(new Option(f, f))); }
 
     const lista = document.getElementById('listaEtiquetas'); lista.innerHTML = "";
-    if (zpls.length === 0) { lista.innerHTML = "<li class='list-group-item text-muted' style='background:transparent;'>Vazio.</li>"; atualizarBadges(); return; }
+    if (zpls.length === 0) { lista.innerHTML = "<li class='list-group-item text-muted' style='background:transparent;'>Vazio.</li>"; atualizarBadges();
+    aplicarEstadoPreferencias(); return; }
     
     zpls.forEach(f => {
         const isAtiva = (f === etiquetaAtiva);
@@ -560,17 +582,48 @@ async function carregarEtiquetas() {
         </li>`;
     });
     atualizarBadges();
+    aplicarEstadoPreferencias();
 }
 
 async function uploadArquivo(inputId, urlRota) { 
     const input = document.getElementById(inputId); 
-    if (input.files.length === 0) return; 
-    const fd = new FormData(); fd.append('file', input.files[0]); 
-    const res = await fetch(urlRota, { method: 'POST', body: fd }); 
-    if (res.ok) { 
-        input.value = ""; showToast("Upload Concluído!", "success");
-        if(urlRota.includes('etiqueta')) carregarEtiquetas(); else carregarArquivos();
-    } 
+    if (!input || input.files.length === 0) {
+        showToast("Selecione um ficheiro primeiro!", "warning");
+        return; 
+    }
+    const fd = new FormData(); 
+    fd.append('file', input.files[0]); 
+    try {
+        const res = await fetch(urlRota, { method: 'POST', body: fd }); 
+        if (res.ok) { 
+            const jsonResposta = await res.json();
+            input.value = ""; 
+            if (jsonResposta.sucesso) {
+                showToast("Upload Concluído com sucesso!", "success");
+                // Forçar recarregamento das listas sem precisar de F5
+                if (urlRota.includes('etiqueta')) {
+                    carregarEtiquetas();
+                } else {
+                    carregarArquivos();
+                }
+            } else {
+                showToast(jsonResposta.erro || "Erro no Upload.", "error");
+            }
+        } else {
+            showToast("Falha na comunicação com o servidor", "error");
+        }
+    } catch (e) {
+        showToast("Erro: " + e.message, "error");
+    }
+}
+
+function abrirModal(id) {
+    const m = document.getElementById(id);
+    if (m) {
+        let modal = bootstrap.Modal.getInstance(m);
+        if (!modal) modal = new bootstrap.Modal(m);
+        modal.show();
+    }
 }
 
 async function apagarArquivo(nome, tipo) { 
@@ -660,7 +713,8 @@ function ativarPerfil(p) {
     document.getElementById('selectBaud').value = p.baud;
     document.getElementById('selectFicheiro').disabled = true; 
     document.getElementById('selectBaud').disabled = true; 
-    atualizarBadges(); showPanel('painel-flash');
+    atualizarBadges();
+    aplicarEstadoPreferencias(); showPanel('painel-flash');
     showToast(`Perfil ${p.nome} Ativado.`, "success");
 }
 
@@ -669,6 +723,7 @@ function cancelarPerfil() {
     document.getElementById('selectFicheiro').disabled = false; 
     document.getElementById('selectBaud').disabled = false; 
     atualizarBadges();
+    aplicarEstadoPreferencias();
 }
 
 function ativarEtiquetaManual(nome) { 
@@ -737,4 +792,52 @@ function fecharAplicacao() {
         document.body.innerHTML = `<div class='shutdown-screen'><i class="fas fa-power-off fa-4x mb-4" style="color: var(--danger);"></i><h2 class="fw-bold">Sistema Encerrado</h2><p class="text-muted mt-2">Pode fechar a janela em segurança.</p></div>`; 
         setTimeout(() => window.close(), 2000); 
     } 
+}
+
+// --- PREFERÊNCIAS E SOM (BEEP) ---
+function aplicarEstadoPreferencias() {
+    const tutAtivos = localStorage.getItem('tutoriaisAtivos') !== 'false';
+    document.querySelectorAll('.btn-tutorial').forEach(btn => {
+        btn.style.setProperty('display', tutAtivos ? 'inline-block' : 'none', 'important');
+    });
+    const tTut = document.getElementById('toggle-tutoriais');
+    if (tTut) tTut.checked = tutAtivos;
+    
+    const somAtivo = localStorage.getItem('somAtivo') !== 'false';
+    const tSom = document.getElementById('toggle-som');
+    if (tSom) tSom.checked = somAtivo;
+}
+
+function alternarTutoriais() {
+    localStorage.setItem('tutoriaisAtivos', document.getElementById('toggle-tutoriais').checked);
+    aplicarEstadoPreferencias();
+}
+
+function alternarSom() {
+    localStorage.setItem('somAtivo', document.getElementById('toggle-som').checked);
+}
+
+function tocarSomSucesso() {
+    if (localStorage.getItem('somAtivo') === 'false') return;
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Primeiro tom (Agudo)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.connect(gain1); gain1.connect(ctx.destination);
+        osc1.type = 'sine'; osc1.frequency.setValueAtTime(880, ctx.currentTime); // Nota A5
+        gain1.gain.setValueAtTime(0.1, ctx.currentTime);
+        osc1.start(); osc1.stop(ctx.currentTime + 0.15);
+        
+        // Segundo tom (Mais Agudo, confirmacao)
+        setTimeout(() => {
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2); gain2.connect(ctx.destination);
+            osc2.type = 'sine'; osc2.frequency.setValueAtTime(1108.73, ctx.currentTime); // Nota C#6
+            gain2.gain.setValueAtTime(0.1, ctx.currentTime);
+            osc2.start(); osc2.stop(ctx.currentTime + 0.3);
+        }, 150);
+    } catch(e) { console.warn("Áudio não suportado ou bloqueado no navegador."); }
 }
