@@ -3,12 +3,33 @@ import csv
 import json
 import serial.tools.list_ports
 from datetime import datetime
-from flask import Blueprint, render_template, request, jsonify, send_file, send_from_directory, current_app
+from flask import Blueprint, render_template, request, jsonify, send_file, send_from_directory, current_app, session
+from werkzeug.utils import secure_filename
 from app.core.utils import guardar_registo_csv, extrair_identificadores, ZPLEngine
 import re
 
 main_routes = Blueprint('main_routes', __name__)
 
+# ==========================================
+# ROTAS DE AUTENTICAÇÃO (CORREÇÃO VULN 1)
+# ==========================================
+@main_routes.route('/api/login', methods=['POST'])
+def login():
+    senha = request.json.get('password')
+    # A password agora é validada no backend!
+    if senha == "admin123":
+        session['is_admin'] = True
+        return jsonify(sucesso=True)
+    return jsonify(sucesso=False, erro="Senha incorreta")
+
+@main_routes.route('/api/logout', methods=['POST'])
+def logout():
+    session.pop('is_admin', None)
+    return jsonify(sucesso=True)
+
+# ==========================================
+# ROTAS GERAIS E GESTÃO DE FICHEIROS
+# ==========================================
 @main_routes.route('/')
 def index():
     return render_template('index.html')
@@ -23,18 +44,20 @@ def listar_ficheiros():
     files = [f for f in os.listdir(current_app.config['FIRMWARE_FOLDER']) if f.endswith('.bin')]
     return jsonify(files)
 
+# CORREÇÃO VULN 2: SECURE_FILENAME NOS UPLOADS
 @main_routes.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files: return jsonify(sucesso=False, erro="Nenhum ficheiro")
     file = request.files['file']
     if file and file.filename.endswith('.bin'):
-        file.save(os.path.join(current_app.config['FIRMWARE_FOLDER'], file.filename))
+        nome_seguro = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['FIRMWARE_FOLDER'], nome_seguro))
         return jsonify(sucesso=True)
     return jsonify(sucesso=False)
 
 @main_routes.route('/delete_file', methods=['POST'])
 def delete_file():
-    filename = request.json.get('filename')
+    filename = secure_filename(request.json.get('filename', ''))
     filepath = os.path.join(current_app.config['FIRMWARE_FOLDER'], filename)
     if os.path.exists(filepath): os.remove(filepath)
     return jsonify(sucesso=True)
@@ -50,13 +73,14 @@ def upload_etiqueta():
     if 'file' not in request.files: return jsonify(sucesso=False, erro="Nenhum ficheiro")
     file = request.files['file']
     if file:
-        file.save(os.path.join(current_app.config['ETIQUETA_FOLDER'], file.filename))
+        nome_seguro = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['ETIQUETA_FOLDER'], nome_seguro))
         return jsonify(sucesso=True)
     return jsonify(sucesso=False)
 
 @main_routes.route('/delete_etiqueta', methods=['POST'])
 def delete_etiqueta():
-    filename = request.json.get('filename')
+    filename = secure_filename(request.json.get('filename', ''))
     filepath = os.path.join(current_app.config['ETIQUETA_FOLDER'], filename)
     if os.path.exists(filepath): os.remove(filepath)
     return jsonify(sucesso=True)
@@ -66,14 +90,19 @@ def upload_pdf():
     if 'file' not in request.files: return jsonify(sucesso=False, erro="Nenhum ficheiro")
     file = request.files['file']
     if file and file.filename.lower().endswith('.pdf'):
-        file.save(os.path.join(current_app.config['PDF_FOLDER'], file.filename))
+        nome_seguro = secure_filename(file.filename)
+        file.save(os.path.join(current_app.config['PDF_FOLDER'], nome_seguro))
         return jsonify(sucesso=True)
     return jsonify(sucesso=False, erro="Ficheiro inválido")
 
 @main_routes.route('/download_pdf/<filename>', methods=['GET'])
 def download_pdf(filename):
-    return send_from_directory(current_app.config['PDF_FOLDER'], filename, as_attachment=False)
+    nome_seguro = secure_filename(filename)
+    return send_from_directory(current_app.config['PDF_FOLDER'], nome_seguro, as_attachment=False)
 
+# ==========================================
+# ROTAS RESTANTES
+# ==========================================
 @main_routes.route('/listar_portas', methods=['GET'])
 def listar_portas():
     portas = serial.tools.list_ports.comports()
@@ -87,13 +116,11 @@ def perfis_api():
             json.dump(request.json, f)
         return jsonify(sucesso=True)
     else:
-        # VERIFICAÇÃO DE SEGURANÇA: Só tenta ler se o ficheiro existir E não estiver vazio
         if os.path.exists(current_app.config['PERFIS_FILE']) and os.path.getsize(current_app.config['PERFIS_FILE']) > 0:
             try:
                 with open(current_app.config['PERFIS_FILE'], 'r', encoding='utf-8') as f:
                     return jsonify(json.load(f))
             except json.JSONDecodeError:
-                # Se o JSON estiver corrompido, devolve lista vazia em vez de crashar
                 return jsonify([])
         return jsonify([])
 
@@ -156,6 +183,9 @@ def api_processar_zpl_v6():
     quantidade = int(dados.get('quantidade', 1))
 
     if not label_file: return jsonify(sucesso=False, erro="Nenhum ficheiro ZPL especificado.")
+    
+    # Proteção Path Traversal
+    label_file = secure_filename(label_file)
     filepath = os.path.join(current_app.config['ETIQUETA_FOLDER'], label_file)
     if not os.path.exists(filepath): return jsonify(sucesso=False, erro="Ficheiro ZPL não encontrado.")
 

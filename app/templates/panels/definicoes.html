@@ -13,6 +13,19 @@
             <div class="custom-card animate-stagger delay-3" style="border-top-color: var(--danger);">
                 <h5 class="fw-bold text-danger mb-3"><i class="fas fa-user-shield me-2"></i> Acesso Administrador</h5>
                 
+                
+            <div class="custom-card animate-stagger delay-4 mt-4" style="border-top: 4px solid var(--info);">
+                <h5 class="fw-bold text-info mb-3"><i class="fas fa-sliders-h me-2"></i> Preferências de Interface</h5>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-tutoriais" onchange="alternarTutoriais()" checked>
+                    <label class="form-check-label text-muted fw-bold" for="toggle-tutoriais">Mostrar botões "Como Funciona?" e abrir tutoriais automáticos</label>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-som" onchange="alternarSom()" checked>
+                    <label class="form-check-label text-muted fw-bold" for="toggle-som">Tocar aviso sonoro (Beep duplo) quando todos os dados reais são capturados</label>
+                </div>
+            </div>
+            
                 <!-- Secção de Login -->
                 <div id="admin-login-section">
                     <p class="small text-muted mb-3">O modo Administrador permite a criação de Perfis de Hardware, anexação de Manuais PDF e a capacidade de apagar o Histórico.</p>

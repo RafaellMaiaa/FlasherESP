@@ -1,5 +1,8 @@
 <div id="painel-perfis" class="panel">
+    <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Perfis de Hardware & Manuais</h2>
+    <button class="btn btn-outline-info fw-bold shadow-sm btn-tutorial" onclick="abrirModal('modalTutPerfis')"><i class="fas fa-question-circle me-2"></i> Como Funciona?</button>
+</div>
     
     <!-- Corrigida a cor amarela ofuscante para um fundo escuro com borda laranja/amarela -->
     <div class="custom-card admin-only mb-4 animate-stagger delay-2" style="background: rgba(245, 158, 11, 0.05); border-color: rgba(245, 158, 11, 0.3); border-top: 4px solid var(--warning);">
@@ -16,5 +19,22 @@
 
     <div class="row animate-stagger delay-3" id="grid-perfis">
         <!-- JS injeta os perfis aqui -->
+    </div>
+</div>
+
+<div class="modal fade" id="modalTutPerfis" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="background: var(--bg-panel); border: 1px solid var(--border);">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold text-info"><i class="fas fa-info-circle me-2"></i> Guia: Perfis de Hardware</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-light">
+                <h6 class='fw-bold text-accent'>Criar Perfil</h6><p class='small text-muted mb-3'>Associe um Firmware, uma velocidade (Baudrate), um modelo ZPL e um Manual PDF. Esta ação requer sessão de Administrador ativa.</p><h6 class='fw-bold text-accent'>Usar Perfil</h6><p class='small text-muted'>Ao ativar um perfil, as configurações do painel de Produção são fixadas e bloqueadas nos valores definidos, padronizando a gravação e a impressão.</p>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-outline-info fw-bold w-100" data-bs-dismiss="modal">Entendido</button>
+            </div>
+        </div>
     </div>
 </div>
