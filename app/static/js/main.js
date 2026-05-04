@@ -131,28 +131,48 @@ function guardarLogs() {
     a.click();
 }
 
-function tentarLoginAdmin() {
+async function tentarLoginAdmin() {
     const pwdInput = document.getElementById('admin-pwd').value;
-    if (pwdInput === "admin123") {
-        isAdmin = true;
-        document.body.classList.add('is-admin');
-        document.getElementById('admin-login-section').style.display = 'none';
-        document.getElementById('admin-logout-section').style.display = 'block';
-        showToast("Modo Administrador Desbloqueado!", "success");
-        document.getElementById('admin-pwd').value = "";
-        carregarDadosPerfis();
-        carregarLogsDoCSV();
-        showPanel('painel-perfis'); 
-    } else {
-        showToast("Senha incorreta.", "error");
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password: pwdInput })
+        });
+        const data = await res.json();
+
+        if (data.sucesso) {
+            isAdmin = true;
+            document.body.classList.add('is-admin');
+            
+            const loginSec = document.getElementById('admin-login-section');
+            const logoutSec = document.getElementById('admin-logout-section');
+            if(loginSec) loginSec.style.display = 'none';
+            if(logoutSec) logoutSec.style.display = 'block';
+
+            showToast("Modo Administrador Desbloqueado!", "success");
+            document.getElementById('admin-pwd').value = "";
+            carregarDadosPerfis();
+            carregarLogsDoCSV();
+            showPanel('painel-perfis'); 
+        } else {
+            showToast("Senha incorreta.", "error");
+        }
+    } catch (e) {
+        showToast("Erro de comunicação com o servidor.", "error");
     }
 }
 
-function sairAdmin() {
+async function sairAdmin() {
+    await fetch('/api/logout', { method: 'POST' });
     isAdmin = false;
     document.body.classList.remove('is-admin');
-    document.getElementById('admin-login-section').style.display = 'block';
-    document.getElementById('admin-logout-section').style.display = 'none';
+    
+    const loginSec = document.getElementById('admin-login-section');
+    const logoutSec = document.getElementById('admin-logout-section');
+    if(loginSec) loginSec.style.display = 'block';
+    if(logoutSec) logoutSec.style.display = 'none';
+
     showToast("Sessão de Administrador Encerrada.", "warning");
     carregarDadosPerfis(); 
     showPanel('painel-flash'); 
