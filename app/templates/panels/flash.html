@@ -12,7 +12,15 @@
                     <label class="fw-bold small text-muted mb-1">PORTA COM</label>
                     <div class="input-group mb-3"><select id="selectPorta" class="form-select form-select-sm"></select><button class="btn btn-sm btn-outline-secondary" onclick="carregarPortas()"><i class="fas fa-sync"></i></button></div>
                     <label class="fw-bold small text-muted mb-1">VELOCIDADE</label>
-                    <select id="selectBaud" class="form-select form-select-sm mb-3"><option value="115200" selected>115200</option><option value="460800">460800</option></select>
+                    <select id="selectBaud" class="form-select form-select-sm mb-3">
+                        <option value="9600">9600</option>
+                        <option value="57600">57600</option>
+                        <option value="74880">74880 (Boot)</option>
+                        <option value="115200" selected>115200</option>
+                        <option value="230400">230400</option>
+                        <option value="460800">460800</option>
+                        <option value="921600">921600 (Rápido)</option>
+                    </select>
                     <label class="fw-bold small text-muted mb-1">FIRMWARE (.BIN)</label>
                     <select id="selectFicheiro" class="form-select form-select-sm mb-3"></select>
                 </div>
@@ -38,7 +46,15 @@
                             <div><button onclick="guardarLogs()" class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-save"></i></button><button onclick="limparEcra()" class="btn btn-sm btn-outline-secondary"><i class="fas fa-trash"></i></button></div>
                         </div>
                         <div id="tools-monitor" class="d-flex align-items-center w-100 justify-content-between" style="display: none !important;">
-                            <div class="d-flex align-items-center"><select id="monitorBaud" class="form-select form-select-sm me-2" style="width: 90px;"><option value="115200" selected>115200</option><option value="9600">9600</option></select><button onclick="toggleMonitor()" id="btn-monitor" class="btn btn-sm btn-outline-info fw-bold"><i class="fas fa-plug me-1"></i> Conectar</button></div>
+                            <div class="d-flex align-items-center"><select id="monitorBaud" class="form-select form-select-sm me-2" style="width: 100px;">
+                                <option value="9600">9600</option>
+                                <option value="57600">57600</option>
+                                <option value="74880">74880</option>
+                                <option value="115200" selected>115200</option>
+                                <option value="230400">230400</option>
+                                <option value="460800">460800</option>
+                                <option value="921600">921600</option>
+                            </select><button onclick="toggleMonitor()" id="btn-monitor" class="btn btn-sm btn-outline-info fw-bold"><i class="fas fa-plug me-1"></i> Conectar</button></div>
                             <div><button onclick="guardarLogs()" class="btn btn-sm btn-outline-secondary me-1"><i class="fas fa-save"></i></button><button onclick="limparEcra()" class="btn btn-sm btn-outline-secondary"><i class="fas fa-trash"></i></button></div>
                         </div>
                     </div>
