@@ -10,7 +10,10 @@ def get_resource_path(relative_path):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), relative_path)
 
-BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 FIRMWARE_FOLDER = os.path.join(BASE_DIR, 'firmwares')
 ETIQUETA_FOLDER = os.path.join(BASE_DIR, 'etiquetas')
 PDF_FOLDER = os.path.join(BASE_DIR, 'pdfs')

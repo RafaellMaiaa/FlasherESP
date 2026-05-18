@@ -1,62 +1,35 @@
 <div id="painel-etiquetas" class="panel">
-    <div class="d-flex justify-content-between align-items-center mb-4 animate-stagger delay-1">
-        <h2 style="color: var(--text-main); font-weight: 700; margin:0;">Módulo ZPL (Impressão)</h2>
-        <button class="btn btn-outline-info fw-bold shadow-sm btn-tutorial" onclick="abrirModal('modalTutorialZPL')">
-            <i class="fas fa-question-circle me-2"></i> Como Funciona?
-        </button>
+    <div class="panel-title">
+        <span>Módulo ZPL</span>
     </div>
-
-    <div class="row">
-        <div class="col-md-5">
-            <div class="custom-card mb-4 animate-stagger delay-2" style="border-left: 5px solid var(--accent);">
-                <h5 class="mb-3 text-muted">Carregar Novo Modelo Livre</h5>
-                <div class="input-group mb-2">
-                    <input type="file" id="upEtiqueta" class="form-control" accept=".zpl,.txt,.prn,.lbl,.nlbl">
-                    <button class="btn btn-outline-info" onclick="uploadArquivo('upEtiqueta', '/upload_etiqueta')">
-                        <i class="fas fa-upload me-2"></i> Subir
-                    </button>
+    
+    <div class="row align-items-stretch">
+        <div class="col-md-4 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <label class="label-section">Inserir Novo Molde</label>
+                
+                <p class="card-description">Carregue ficheiros .zpl ou .txt contendo a estrutura base para a impressora térmica.</p>
+                
+                <div class="input-group-section">
+                    <label class="small mb-1">Ficheiro de Código</label>
+                    <input type="file" id="file-zpl" class="form-control font-monospace" accept=".zpl,.txt">
                 </div>
-                <small class="text-muted d-block mt-2">Guarde no ZebraDesigner usando <b>Imprimir para ficheiro</b>.</small>
+                
+                <div class="divider-section">
+                    <button class="btn-action-primary w-100 py-3" onclick="uploadArquivo('file-zpl', '/upload_etiqueta')">Carregar Molde</button>
+                </div>
             </div>
         </div>
-        <div class="col-md-7">
-            <div class="custom-card animate-stagger delay-3">
-                <h5 class="mb-3 text-muted">Modelos ZPL no Sistema</h5>
-                <ul id="listaEtiquetas" class="list-group list-group-flush" style="background: transparent;"></ul>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="modal fade" id="modalTutorialZPL" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="background: var(--bg-panel); border: 1px solid var(--border);">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title fw-bold text-info"><i class="fas fa-info-circle me-2"></i> Guia: Etiquetas ZPL</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-light">
-                <p class="mb-4 text-muted">Para que o sistema consiga injetar os dados na etiqueta, é necessário utilizar <strong>variáveis de substituição</strong> no molde.</p>
-        <h6 class="fw-bold text-accent"><i class="fas fa-font me-2"></i> 1. Inserir as Variáveis</h6>
-        <p class="small text-muted mb-2">No ZebraDesigner, crie caixas de texto com os seguintes códigos exatos:</p>
-        <div class="bg-dark p-3 rounded mb-4 border border-secondary">
-            <ul class="list-unstyled mb-0 small font-monospace">
-                <li class="mb-2"><span class="text-warning">@MAC@</span> <span class="text-muted">→ Injeta o MAC Address lido</span></li>
-                <li class="mb-2"><span class="text-warning">@SN@</span> <span class="text-muted">→ Injeta o Serial Number gerado</span></li>
-                <li class="mb-2"><span class="text-warning">@IMEI@</span> <span class="text-muted">→ Injeta o IMEI lido</span></li>
-                <li><span class="text-warning">@CIMI@</span> <span class="text-muted">→ Injeta o CIMI lido</span></li>
-            </ul>
-        </div>
-        <h6 class="fw-bold text-accent"><i class="fas fa-file-export me-2"></i> 2. Exportar o Ficheiro</h6>
-        <p class="small text-muted mb-0">A aplicação necessita do código RAW da impressora:</p>
-        <ol class="small text-muted mt-2">
-            <li>Vá a <strong>Ficheiro > Imprimir</strong>.</li>
-            <li>Marque a opção <strong>"Imprimir para Ficheiro"</strong>.</li>
-            <li>Guarde o ficheiro no formato <code>.prn</code> e faça o upload nesta página.</li>
-        </ol>
-            </div>
-            <div class="modal-footer border-top border-secondary">
-                <button type="button" class="btn btn-outline-info fw-bold w-100" data-bs-dismiss="modal">Entendido</button>
+        <div class="col-md-8 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <div class="card-header-label">
+                    <span class="label-text">Moldes Disponíveis</span>
+                    <button class="btn-action-secondary" onclick="carregarEtiquetas()" style="padding: 4px 8px; font-size: 11px;">Refresh</button>
+                </div>
+                
+                <ul id="listaEtiquetas" class="list-group list-group-flush mb-0" style="max-height: 450px; overflow-y: auto;">
+                </ul>
             </div>
         </div>
     </div>

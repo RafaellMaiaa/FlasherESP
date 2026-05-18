@@ -1,52 +1,55 @@
 <div id="painel-definicoes" class="panel">
-    <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Definições do Sistema</h2>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="custom-card animate-stagger delay-2">
-                <h5 class="fw-bold text-primary mb-3"><i class="fas fa-network-wired me-2"></i> Impressora de Rede</h5>
-                <label class="fw-bold small text-muted mb-1">IP DA ZEBRA (Porta 9100 RAW)</label>
-                <input type="text" id="ip-impressora" class="form-control mb-3" placeholder="Ex: 192.168.1.50">
-                <p class="small text-muted mb-0"><i class="fas fa-info-circle me-1"></i> Se este campo estiver vazio, o sistema irá apenas fazer o <b>download</b> do ficheiro ZPL gerado para o computador.</p>
+    <h3 class="panel-title" style="margin-bottom: 24px;">Definições do Sistema</h3>
+    
+    <div class="row align-items-stretch">
+        <div class="col-md-6 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <label class="label-section" style="color: var(--accent); margin-bottom: 20px;">Acesso Administrador</label>
+                
+                <div id="admin-login-section">
+                    <div class="input-group-section">
+                        <label class="small mb-1">Password de Admin</label>
+                        <div class="input-group mb-3">
+                            <input type="password" id="admin-pwd" class="form-control" placeholder="Introduza a password..." onkeypress="if(event.key === 'Enter') tentarLoginAdmin()">
+                            <button class="btn btn-outline-secondary" onclick="tentarLoginAdmin()">Desbloquear</button>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <p class="info-text">Necessário para apagar registos, criar perfis de produção e eliminar ficheiros core.</p>
+                    </div>
+                </div>
+                
+                <div class="admin-only">
+                    <div class="p-3 mb-3" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-left: 4px solid #10b981; border-radius: 4px;">
+                        <div class="d-flex align-items-center" style="color: #10b981; font-weight: 600;">
+                            <i class="fas fa-check-circle fa-lg me-3"></i>
+                            <div>
+                                <span class="d-block text-white">Sessão de Administrador Ativa</span>
+                                <span class="small" style="color: #10b981;">Tem controlo total sobre o sistema.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-action-secondary w-100" style="color: var(--danger);" onclick="sairAdmin()">Encerrar Sessão</button>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="custom-card animate-stagger delay-3" style="border-top-color: var(--danger);">
-                <h5 class="fw-bold text-danger mb-3"><i class="fas fa-user-shield me-2"></i> Acesso Administrador</h5>
+
+        <div class="col-md-6 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <label class="label-section" style="color: var(--accent); margin-bottom: 20px;">Impressora ZPL (Zebra)</label>
                 
-                
-            <div class="custom-card animate-stagger delay-4 mt-4" style="border-top: 4px solid var(--info);">
-                <h5 class="fw-bold text-info mb-3"><i class="fas fa-sliders-h me-2"></i> Preferências de Interface</h5>
-                <div class="form-check form-switch mb-3">
-                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-tutoriais" onchange="alternarTutoriais()" checked>
-                    <label class="form-check-label text-muted fw-bold" for="toggle-tutoriais">Mostrar botões "Como Funciona?" e abrir tutoriais automáticos</label>
-                </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-som" onchange="alternarSom()" checked>
-                    <label class="form-check-label text-muted fw-bold" for="toggle-som">Tocar aviso sonoro (Beep duplo) quando todos os dados reais são capturados</label>
-                </div>
-            </div>
-            
-                <!-- Secção de Login -->
-                <div id="admin-login-section">
-                    <p class="small text-muted mb-3">O modo Administrador permite a criação de Perfis de Hardware, anexação de Manuais PDF e a capacidade de apagar o Histórico.</p>
-                    <div class="input-group">
-                        <input type="password" id="admin-pwd" class="form-control" placeholder="Introduza a senha de acesso...">
-                        <button class="btn btn-danger fw-bold" onclick="tentarLoginAdmin()"><i class="fas fa-unlock me-1"></i> Desbloquear</button>
+                <div class="input-group-section">
+                    <label class="small mb-1">Endereço IP na Rede</label>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-dark text-white" style="border-color: var(--border);">IP</span>
+                        <input type="text" id="ip-impressora" class="form-control font-monospace" placeholder="Ex: 192.168.1.100">
                     </div>
                 </div>
-
-                <!-- Secção Logged In (Oculta por padrão) -->
-                <div id="admin-logout-section" style="display: none;">
-                    <div class="alert alert-success d-flex align-items-center mb-0" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--success); color: var(--success);">
-                        <i class="fas fa-user-shield fa-2x me-3"></i>
-                        <div>
-                            <strong>Sessão Ativa</strong><br>
-                            <span class="small">Sistema totalmente desbloqueado.</span>
-                        </div>
-                        <button class="btn btn-sm btn-outline-danger ms-auto fw-bold" onclick="sairAdmin()"><i class="fas fa-lock me-1"></i> Bloquear</button>
-                    </div>
+                
+                <div class="info-box warning">
+                    <p class="info-text">A impressora deve estar na mesma rede LAN que a máquina a executar este servidor. O sistema comunicará diretamente via Socket Raw (Porta 9100).</p>
                 </div>
-
             </div>
         </div>
     </div>

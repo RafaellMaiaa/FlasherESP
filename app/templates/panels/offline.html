@@ -1,46 +1,55 @@
 <div id="painel-offline" class="panel">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Processamento de Logs (Modo Offline)</h2>
-    <button class="btn btn-outline-info fw-bold shadow-sm btn-tutorial" onclick="abrirModal('modalTutOffline')"><i class="fas fa-question-circle me-2"></i> Como Funciona?</button>
-</div>
-    <div class="row">
-        <div class="col-md-6">
-            <!-- Removido o inline style da borda lateral -->
-            <div class="custom-card mb-4 animate-stagger delay-2">
-                <h5 class="mb-3 text-muted">1. Importar Ficheiro de Log (.txt)</h5>
-                <div class="input-group mb-3"><input type="file" id="offline-file" class="form-control" accept=".txt"><button class="btn btn-outline-info fw-bold" onclick="analisarOffline()"><i class="fas fa-search me-2"></i> Analisar</button></div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="custom-card animate-stagger delay-3" style="border-top-color: var(--warning);">
-                <h5 class="mb-4 text-warning"><i class="fas fa-magic me-2"></i>2. Dados Extraídos</h5>
-                <div class="row g-3 mb-4">
-                    <div class="col-6"><label class="small fw-bold text-muted">MAC Address</label><input type="text" id="off-mac" class="form-control prod-input"></div>
-                    <div class="col-6"><label class="small fw-bold text-warning">SN</label><div class="input-group"><input type="text" id="off-sn" class="form-control prod-input"><button class="btn btn-warning" onclick="gerarNovoSN('off-sn')" type="button"><i class="fas fa-sync-alt"></i></button></div></div>
-                    <div class="col-6"><label class="small fw-bold text-muted">IMEI</label><input type="text" id="off-imei" class="form-control prod-input"></div>
-                    <div class="col-6"><label class="small fw-bold text-danger">CIMI</label><input type="text" id="off-cimi" class="form-control prod-input"></div>
-                </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-primary w-50 py-2 fw-bold" onclick="processarOfflineCompleto(false)"><i class="fas fa-file-code me-2"></i> Só Gerar ZPL</button>
-                    <button class="btn btn-success w-50 py-2 fw-bold" onclick="processarOfflineCompleto(true)"><i class="fas fa-save me-2"></i> Salvar e Imprimir</button>
-                </div>
-            </div>
-        </div>
+    <div class="panel-title">
+        <span>Processamento de Logs</span>
     </div>
-</div>
+    
+    <div class="row align-items-stretch">
+        <div class="col-md-4 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <label class="label-section">1. Extrair de Ficheiro</label>
+                
+                <p class="card-description">Carregue o ficheiro de log gerado por ferramentas externas (ex: PuTTY) para extrair os identificadores.</p>
+                
+                <div class="input-group-section">
+                    <label class="small mb-1">Ficheiro Bruto (.TXT)</label>
+                    <input type="file" id="offline-file" class="form-control font-monospace" accept=".txt">
+                </div>
+                
+                <div class="divider-section">
+                    <button class="btn-action-primary w-100 py-3" onclick="analisarOffline()">Analisar e Extrair</button>
+                </div>
+            </div>
+        </div>
 
-<div class="modal fade" id="modalTutOffline" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="background: var(--bg-panel); border: 1px solid var(--border);">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title fw-bold text-info"><i class="fas fa-info-circle me-2"></i> Guia: Modo Offline</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-light">
-                <h6 class='fw-bold text-accent'>1. Importar Log</h6><p class='small text-muted mb-3'>Faça upload de um ficheiro de texto (<code>.txt</code>) previamente descarregado a partir da consola serial.</p><h6 class='fw-bold text-accent'>2. Processamento</h6><p class='small text-muted'>O sistema analisa o ficheiro importado, extrai os identificadores (MAC, IMEI, CIMI) e permite gerar ou imprimir a etiqueta ZPL correspondente sem necessidade de ligação direta à placa.</p>
-            </div>
-            <div class="modal-footer border-top border-secondary">
-                <button type="button" class="btn btn-outline-info fw-bold w-100" data-bs-dismiss="modal">Entendido</button>
+        <div class="col-md-8 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <label class="label-section">2. Validação de Identificadores</label>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="small mb-1">Mac Address</label>
+                        <input type="text" id="off-mac" class="form-control prod-input" placeholder="...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small mb-1" style="color: var(--warning);">Serial Number</label>
+                        <div class="input-group">
+                            <input type="text" id="off-sn" class="form-control prod-input">
+                            <button class="btn btn-outline-secondary" style="border: 1px solid var(--border);" onclick="gerarNovoSN('off-sn')"><i class="fas fa-random"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small mb-1">IMEI GSM</label>
+                        <input type="text" id="off-imei" class="form-control prod-input" placeholder="...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="small mb-1">CIMI SIM</label>
+                        <input type="text" id="off-cimi" class="form-control prod-input" placeholder="...">
+                    </div>
+                </div>
+
+                <div class="divider-section">
+                    <button class="btn-action-primary w-100 py-3" onclick="processarOfflineCompleto(true)">Registar e Imprimir</button>
+                </div>
             </div>
         </div>
     </div>

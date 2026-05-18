@@ -1,36 +1,35 @@
 <div id="painel-arquivos" class="panel">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-4 animate-stagger delay-1" style="color: var(--text-main); font-weight: 700;">Biblioteca de Firmwares</h2>
-    <button class="btn btn-outline-info fw-bold shadow-sm btn-tutorial" onclick="abrirModal('modalTutArquivos')"><i class="fas fa-question-circle me-2"></i> Como Funciona?</button>
-</div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="custom-card animate-stagger delay-2">
-                <h5 class="mb-3 text-muted">Adicionar Ficheiro (.bin)</h5>
-                <div class="input-group mb-4"><input type="file" id="upFile" class="form-control" accept=".bin"><button class="btn btn-outline-info" onclick="uploadArquivo('upFile', '/upload')"><i class="fas fa-upload"></i> Subir</button></div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="custom-card animate-stagger delay-3">
-                <h5 class="mb-3 text-muted">Ficheiros Locais</h5>
-                <ul id="listaFiles" class="list-group list-group-flush" style="background: transparent;"></ul>
-            </div>
-        </div>
+    <div class="panel-title">
+        <span>Gestão de Firmwares</span>
     </div>
-</div>
+    
+    <div class="row align-items-stretch">
+        <div class="col-md-4 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <label class="label-section">Adicionar Firmware</label>
+                
+                <p class="card-description">Carregue ficheiros .bin compilados para disponibilizar no ambiente de produção.</p>
+                
+                <div class="input-group-section">
+                    <label class="small mb-1">Novo Ficheiro (.BIN)</label>
+                    <input type="file" id="file-bin" class="form-control font-monospace" accept=".bin">
+                </div>
+                
+                <div class="divider-section">
+                    <button class="btn-action-primary w-100 py-3" onclick="uploadArquivo('file-bin', '/upload_file')">Inserir Firmware</button>
+                </div>
+            </div>
+        </div>
 
-<div class="modal fade" id="modalTutArquivos" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content" style="background: var(--bg-panel); border: 1px solid var(--border);">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title fw-bold text-info"><i class="fas fa-info-circle me-2"></i> Guia: Firmwares</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4 text-light">
-                <h6 class='fw-bold text-accent'>Adicionar Ficheiros</h6><p class='small text-muted mb-3'>Faça upload dos ficheiros de firmware para o servidor. Apenas são suportados ficheiros com a extensão <code>.bin</code>.</p><h6 class='fw-bold text-accent'>Apagar Ficheiros</h6><p class='small text-muted'>Para remover ficheiros da lista, inicie sessão como Administrador nas Definições. O botão de exclusão ficará visível.</p>
-            </div>
-            <div class="modal-footer border-top border-secondary">
-                <button type="button" class="btn btn-outline-info fw-bold w-100" data-bs-dismiss="modal">Entendido</button>
+        <div class="col-md-8 mb-4">
+            <div class="custom-card card-flex-col h-100">
+                <div class="card-header-label">
+                    <span class="label-text">Repositório Local</span>
+                    <button class="btn-action-secondary" onclick="carregarArquivos()" style="padding: 4px 8px; font-size: 11px;">Atualizar</button>
+                </div>
+                
+                <ul id="listaFiles" class="list-group list-group-flush mb-0" style="max-height: 450px; overflow-y: auto;">
+                </ul>
             </div>
         </div>
     </div>
