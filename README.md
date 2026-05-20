@@ -1,16 +1,16 @@
-# ⚡ ESP Flasher MES (Manufacturing Execution System)
+# ⚡ ESP Flasher
 
-Uma aplicação web desenvolvida em Python (Flask) para a automação do ciclo inicial de gravação, testagem e rastreabilidade de microcontroladores da família ESP (ESP32/ESP8266).
+Uma aplicação web desenvolvida em Python (Flask) para a automação do ciclo inicial de gravação, teste de microcontroladores da família ESP (ESP32/ESP8266).
 
-O objetivo deste software é unificar várias ferramentas isoladas numa única interface intuitiva: Flash de firmware, monitorização serial, extração de identificadores (MAC/IMEI), registo de dados e impressão de etiquetas industriais.
+O objetivo deste software é unificar várias ferramentas isoladas numa única interface intuitiva: Flash de firmware, monitorização serial, extração de identificadores (MAC/IMEI), registo de dados e impressão de etiquetas.
 
 ## 🚀 Funcionalidades Principais
 
 *   **Processo "Tudo-em-1"**: Com um clique, a aplicação faz o flash do `.bin`, lê os logs de arranque via porta COM, extrai o MAC Address e IMEI, e imprime a etiqueta com esses dados na impressora configurada.
 *   **Monitor Serial Integrado**: Leitura em tempo real (via WebSockets) da comunicação serial com limpeza automática (Regex) de dados.
 *   **Módulo de Impressão RAW ZPL**: Envio de código ZPL diretamente via TCP/IP (Porta 9100) para impressoras Zebra, com substituição de variáveis em tempo real.
-*   **Histórico e Rastreabilidade**: Registo automático de todos os flashes e identificadores num ficheiro CSV, servindo como base de dados de produção.
-*   **Gestão de Perfis**: Área protegida por password para criação de perfis rigorosos (Firmware + Baudrate + Molde de Etiqueta).
+*   **Histórico e Rastreabilidade**: Registo automático de todos os flashes e identificadores num ficheiro CSV, servindo como base de dados.
+*   **Gestão de Perfis**: Área protegida por password para criação de perfis (Firmware + Baudrate + Molde de Etiqueta).
 
 ## 🛠️ Stack Tecnológica
 
