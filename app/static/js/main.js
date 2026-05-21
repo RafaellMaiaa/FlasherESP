@@ -19,10 +19,16 @@ let flashTimerInterval = null;
 let etiquetaAtiva = localStorage.getItem('etiquetaAtiva') || null;
 
 // Inicialização segura do DOM
-let modalResetObj, modalConfirmObj;
+let modalResetObj;
+let modalConfirmObj;
+let modalPrepFlashObj;
+let modalErroFlashObj;
+
 document.addEventListener("DOMContentLoaded", () => {
     modalResetObj = new bootstrap.Modal(document.getElementById('modalReset'));
     modalConfirmObj = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+    modalPrepFlashObj = new bootstrap.Modal(document.getElementById('modalPrepFlash'));
+    modalErroFlashObj = new bootstrap.Modal(document.getElementById('modalErroFlash'));
     
     const ipInput = document.getElementById('ip-impressora');
     if(ipInput) {
@@ -351,17 +357,30 @@ socket.on('log_flash', msg => {
     }
 });
 
-socket.on('fim_processo', () => { 
+socket.on('fim_processo', (data) => { 
     document.getElementById('barra').style.width = "100%"; 
-    document.getElementById('status-text').innerText = "Concluído"; 
-    document.getElementById('status-text').className = "text-success fw-bold"; 
     consola.innerHTML += "<div class='log-line text-success fw-bold' style='margin-top: 10px;'>>> PROCESSO TERMINADO!</div>"; 
     consola.scrollTop = consola.scrollHeight; 
 
-    if (isAutoModeRunning) {
-        modalResetObj.show();
-        const porta = document.getElementById('selectPorta').value;
-        socket.emit('iniciar_monitor', { porta: porta, baud: 115200 }); // Liga monitor automaticamente
+    // data.sucesso vem do backend a indicar se o esptool retornou código 0
+    if (data && data.sucesso === true) {
+        document.getElementById('status-text').innerText = "Concluído"; 
+        document.getElementById('status-text').className = "text-success fw-bold"; 
+        
+        if (isAutoModeRunning) {
+            modalResetObj.show();
+            const porta = document.getElementById('selectPorta').value;
+            socket.emit('iniciar_monitor', { porta: porta, baud: 115200 }); // Liga monitor automaticamente
+        }
+    } else {
+        document.getElementById('status-text').innerText = "Falhou"; 
+        document.getElementById('status-text').className = "text-danger fw-bold";
+        
+        if (isAutoModeRunning) {
+            modalErroFlashObj.show(); // MOSTRA MODAL BONITA DE ERRO
+            isAutoModeRunning = false;
+            resetBotaoAutomacao();
+        }
     }
 });
 
